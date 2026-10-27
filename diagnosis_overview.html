@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diagnosis Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: three columns — vessel navigation | diagnosis board | voyage panel. Stacks on narrow screens. */
+:root {
+  --bg: #EDF1F4;
+  --surface: #FFFFFF;
+  --surface-2: #F4F7F9;
+  --line: #D8E0E6;
+  --fg: #15212B;
+  --muted: #5B6A76;
+  --accent: #1B5E8C;
+  --accent-soft: #E0EBF3;
+  --nav-bg: #0F2A3D;
+  --nav-fg: #C4D3DE;
+  --nav-active: #1D4562;
+  --good: #1E9A60;
+  --warn: #E08700;
+  --crit: #D43F3F;
+  --info: #3A78D4;
+  --health: #F2B300;
+  --health-rest: #34424F;
+  --band: rgba(30, 154, 96, 0.10);
+  --font-sans: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C151C; --surface: #14202A; --surface-2: #192834; --line: #263744;
+    --fg: #E3EBF1; --muted: #8D9CA8; --accent: #62A9DD; --accent-soft: #1A3347;
+    --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
+    --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
+    --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C151C; --surface: #14202A; --surface-2: #192834; --line: #263744;
+  --fg: #E3EBF1; --muted: #8D9CA8; --accent: #62A9DD; --accent-soft: #1A3347;
+  --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
+  --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
+  --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); }
+
+.app {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 340px;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; color: #fff; }
+.brand svg { flex: none; }
+.brand b { display: block; font-size: 15px; letter-spacing: 0.01em; }
+.brand span { display: block; font-size: 11px; color: var(--nav-fg); }
+.nav-group { display: flex; flex-direction: column; gap: 4px; }
+.nav-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 0 8px 6px; opacity: 0.7;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 10px; border: 0; border-radius: 6px;
+  background: transparent; text-align: left; cursor: pointer; color: var(--nav-fg);
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); }
+.nav-item.active { background: var(--nav-active); color: #fff; }
+.nav-item small { display: block; font-size: 11px; opacity: 0.75; }
+.nav-item .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-left: auto; }
+.dot.good { background: var(--good); }
+.dot.warn { background: var(--warn); }
+.dot.crit { background: var(--crit); }
+.nav-item svg { flex: none; opacity: 0.85; }
+
+/* ---------- Main ---------- */
+.main {
+  padding-block: 22px 28px;
+  padding-left: max(16px, 24px);
+  padding-right: max(16px, 24px);
+  display: flex; flex-direction: column; gap: 18px; min-width: 0;
+}
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.crumb { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.updated { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.theme-btn {
+  display: grid; place-items: center; width: 26px; height: 26px; padding: 0;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.theme-btn:hover { color: var(--fg); }
+.theme-btn .i-sun { display: none; }
+.theme-btn.is-dark .i-sun { display: block; }
+.theme-btn.is-dark .i-moon { display: none; }
+.live { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; }
+.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good);
+  animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.3; } }
+
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+}
+.card-head { display: flex; align-items: center; gap: 8px; }
+.card-head h2 { margin: 0; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.card-head .scope { white-space: nowrap; }
+.sum td, .sum th { white-space: nowrap; }
+.card-head .scope { margin-left: auto; font-size: 11px; color: var(--muted); }
+.toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.toggle button {
+  border: 0; background: transparent; padding: 4px 7px; cursor: pointer; color: var(--muted);
+  display: grid; place-items: center;
+}
+.toggle button + button { border-left: 1px solid var(--line); }
+.toggle button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.card-body { height: 178px; min-width: 0; }
+.view-chart { display: flex; align-items: center; gap: 14px; height: 100%; }
+.view-table { height: 100%; overflow: auto; }
+
+/* summary table next to donut */
+.sum { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sum th { font-weight: 500; color: var(--muted); text-align: left; padding: 4px 4px; border-bottom: 1px solid var(--line); }
+.sum td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.sum th:not(:first-child), .sum td:not(:first-child) { text-align: center; }
+.sum tr:last-child td { border-bottom: 0; }
+.swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+/* detail tables */
+.detail { width: 100%; border-collapse: collapse; font-size: 12px; }
+.detail th {
+  position: sticky; top: 0; background: var(--surface-2); color: var(--muted);
+  font-weight: 500; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line);
+}
+.detail td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.detail td small { display: block; color: var(--muted); font-size: 11px; }
+.detail .pill { white-space: nowrap; }
+.detail .r { text-align: center; }
+.pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.pill.good { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.pill.crit { color: var(--crit); background: color-mix(in srgb, var(--crit) 14%, transparent); }
+.pill.info { color: var(--info); background: color-mix(in srgb, var(--info) 14%, transparent); }
+.hbar { display: inline-block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface-2);
+  vertical-align: middle; margin-right: 6px; overflow: hidden; border: 1px solid var(--line); }
+.hbar i { display: block; height: 100%; background: var(--health); }
+
+/* gauge */
+.gauge { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.gauge svg { width: 100%; max-width: 200px; height: auto; }
+.gauge-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+.donut { width: 128px; height: 128px; flex: none; }
+@media (max-width: 1500px) {
+  .app { grid-template-columns: 220px minmax(0, 1fr) 320px; }
+  .card { padding-inline: 14px; }
+  .card-head { gap: 6px; }
+  .donut { width: 104px; height: 104px; }
+  .gauge svg { max-width: 180px; }
+  .view-chart { gap: 10px; }
+  .sum { font-size: 11px; }
+  .sum th, .sum td { padding-inline: 3px; }
+}
+.seg { cursor: pointer; transition: opacity 0.15s ease; }
+svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
+.chart-tip {
+  position: fixed; z-index: 20; pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 6px;
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--line); box-shadow: 0 4px 14px rgba(15, 42, 61, 0.18);
+  font-size: 12px; white-space: nowrap;
+}
+.chart-tip i { width: 8px; height: 8px; border-radius: 50%; }
+.chart-tip b { margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+/* ---------- Worst parameter ---------- */
+.worst { gap: 14px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px;
+  padding: 7px 12px; cursor: pointer; font-size: 13px; text-align: left;
+}
+.tab .rank { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab[aria-selected="true"] .rank { color: rgba(255,255,255,0.75); }
+.worst-body { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr); gap: 18px; }
+.insight { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.insight .headline { font-size: 19px; font-weight: 600; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight .headline .eq { color: var(--crit); }
+.insight .headline .pm { color: var(--info); }
+.insight p { margin: 0; color: var(--muted); max-width: 60ch; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 0; }
+.facts div { min-width: 0; }
+.facts dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.reco { border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; }
+.reco b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
+.trace { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-width: 0; }
+.trace-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+.trace-head .tag { color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.trace-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 11px; }
+.trace-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.trace svg { width: 100%; height: auto; display: block; }
+.trace text { fill: var(--muted); font-size: 10px; font-family: var(--font-mono); }
+
+/* ---------- Right panel ---------- */
+.side {
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  padding: 22px 20px;
+  display: flex; flex-direction: column; gap: 22px; min-width: 0;
+}
+.side h2 { margin: 0 0 10px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.voyage-ends { display: flex; justify-content: space-between; font-size: 12px; }
+.voyage-ends b { display: block; font-size: 14px; }
+.voyage-ends span { color: var(--muted); }
+.voyage-ends > div:last-child { text-align: right; }
+.track { position: relative; height: 84px; margin: 6px 8px 0; }
+.track .rail { position: absolute; left: 0; right: 0; top: 46px; height: 3px; background: var(--line); border-radius: 2px; }
+.track .done { position: absolute; left: 0; top: 46px; height: 3px; background: var(--accent); border-radius: 2px; }
+.track .wp {
+  position: absolute; top: 40px; width: 15px; height: 15px; margin-left: -7.5px;
+  border-radius: 50%; border: 3px solid var(--crit); background: var(--surface);
+}
+.track .wp.passed { border-color: var(--accent); background: var(--accent); }
+.track .wp-label { position: absolute; top: 60px; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+.track .wp-label.first { transform: none; left: -8px !important; }
+.track .wp-label.last { transform: translateX(-100%); margin-left: 8px; }
+.track .ship { position: absolute; top: 0; width: 46px; margin-left: -23px; color: var(--fg); transition: left 0.6s ease; }
+.voyage-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.voyage-stats div { background: var(--surface-2); border-radius: 6px; padding: 8px 10px; }
+.voyage-stats span { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.voyage-stats b { font-size: 14px; }
+
+.log { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.log-vessel { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.log-vessel b { font-size: 18px; letter-spacing: 0.02em; }
+.log-vessel small { display: block; color: var(--muted); font-size: 12px; }
+.kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 6px 10px; font-size: 13px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.weather { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 6px; padding: 10px 12px; }
+.weather svg { flex: none; color: var(--warn); }
+.weather b { font-size: 18px; }
+.weather div:last-child { font-size: 12px; color: var(--muted); }
+.log h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.list li { display: flex; gap: 8px; align-items: flex-start; }
+.list li .pill { flex: none; margin-top: 1px; }
+.actions {
+  border: 1px solid color-mix(in srgb, var(--crit) 45%, var(--line));
+  background: color-mix(in srgb, var(--crit) 7%, var(--surface));
+  border-radius: 8px; padding: 12px 14px;
+}
+.actions-head { display: flex; align-items: center; gap: 6px; color: var(--crit); margin-bottom: 10px; }
+.actions-head h3 { margin: 0; font-size: 13px; color: var(--crit); }
+.actions-head .count {
+  margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--crit); color: #fff; font-size: 11px; font-weight: 700; text-align: center; line-height: 20px;
+}
+.actions .list { gap: 10px; }
+.actions .list b { font-weight: 600; }
+.list .rul { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; }
+
+.note { font-size: 11px; color: var(--muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px) {
+  .app { grid-template-columns: 200px minmax(0, 1fr); }
+  .side { grid-column: 2; border-left: 0; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+@media (max-width: 1080px) {
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+  .worst-body { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .nav-group.views { display: none; }
+  .nav-group.vessels { flex-direction: row; overflow-x: auto; width: 100%; }
+  .nav-group.vessels .nav-label { display: none; }
+  .nav-item { width: auto; flex: none; }
+  .main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .side { grid-column: 1; grid-template-columns: minmax(0, 1fr); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live::before { animation: none; }
+  .track .ship { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Left: menu bar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="6" fill="#1B5E8C"/><path d="M5 17h18l-3 5H8z" fill="#fff"/><path d="M10 11h7v5h-7z" fill="#fff" opacity=".8"/><path d="M13 7h3v4h-3z" fill="#fff" opacity=".6"/></svg>
+      <div><b>Vessel Health</b><span>Condition Monitoring</span></div>
+    </div>
+
+    <nav class="nav-group vessels" aria-label="Vessels">
+      <div class="nav-label">Fleet</div>
+      <button class="nav-item active" data-vessel="MARIN"><span>Vessel 1<small>MARIN</small></span><span class="dot warn" title="Caution"></span></button>
+      <button class="nav-item" data-vessel="AURORA"><span>Vessel 2<small>AURORA</small></span><span class="dot good" title="Good"></span></button>
+      <button class="nav-item" data-vessel="HALCYON"><span>Vessel 3<small>HALCYON</small></span><span class="dot good" title="Good"></span></button>
+      <button class="nav-item" data-vessel="NORDSTAR"><span>Vessel 4<small>NORDSTAR</small></span><span class="dot crit" title="Critical"></span></button>
+    </nav>
+
+    <nav class="nav-group views" aria-label="Views">
+      <div class="nav-label">Menu</div>
+      <button class="nav-item active"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Diagnosis Overview</button>
+      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>Alarm Management</button>
+      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 12 5 7l3 3 3-6 3.5 5"/></svg>Anomaly Detection</button>
+      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l2.5 2"/></svg>Maintenance (RUL)</button>
+    </nav>
+  </aside>
+
+  <!-- ===== Center: diagnosis board ===== -->
+  <main class="main">
+    <header class="page-head">
+      <div>
+        <div class="crumb">Fleet / Vessel 1 · <span class="js-vessel">MARIN</span></div>
+        <h1>Diagnosis Overview</h1>
+      </div>
+      <div class="updated"><span class="live">LIVE</span>Last updated <span class="num mono js-clock">2026-10-27 10:25:24</span>
+        <button class="theme-btn js-theme" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
+          <svg class="i-moon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>
+          <svg class="i-sun" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1 1M12 12l1 1M3 13l1-1M12 4l1-1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="kpis">
+      <!-- Health Index -->
+      <article class="card" data-card="health">
+        <div class="card-head">
+          <h2>Health Index</h2>
+          <span class="scope"># of Vessel</span>
+          <div class="toggle" role="group" aria-label="View">
+            <button data-view="chart" aria-pressed="true" title="Chart view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M7 2v5h5" stroke-width="1.6"/></svg></button>
+            <button data-view="table" aria-pressed="false" title="Table view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/><path d="M1 5h12M1 9h12M5 1v12"/></svg></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="view-chart">
+            <div class="gauge">
+              <svg viewBox="0 0 220 128" role="img" aria-label="Health index 95 percent">
+                <path class="seg" data-label="Degraded" data-value="5%" data-color="--health-rest" d="M24 112 A86 86 0 0 1 196 112" fill="none" stroke="var(--health-rest)" stroke-width="24" pathLength="100"/>
+                <path class="seg" data-label="Healthy" data-value="95%" data-color="--health" d="M24 112 A86 86 0 0 1 196 112" fill="none" stroke="var(--health)" stroke-width="24" pathLength="100" stroke-dasharray="95 100"/>
+                <text x="110" y="98" text-anchor="middle" font-size="34" font-weight="700" fill="var(--fg)" font-family="IBM Plex Sans, sans-serif">95%</text>
+                <text x="110" y="120" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">Overall health</text>
+                <text x="24" y="127" text-anchor="middle" font-size="10" fill="var(--muted)">0</text>
+                <text x="196" y="127" text-anchor="middle" font-size="10" fill="var(--muted)">100</text>
+              </svg>
+              <div class="gauge-legend">
+                <span><i class="swatch" style="background:var(--health)"></i>Healthy 95%</span>
+                <span><i class="swatch" style="background:var(--health-rest)"></i>Degraded 5%</span>
+              </div>
+            </div>
+          </div>
+          <div class="view-table" hidden>
+            <table class="detail"><thead><tr><th>Equipment</th><th>Health</th><th class="r">Status</th></tr></thead><tbody class="js-health-rows"></tbody></table>
+          </div>
+        </div>
+      </article>
+
+      <!-- Equipment Status -->
+      <article class="card" data-card="equipment">
+        <div class="card-head">
+          <h2>Equipment Status</h2>
+          <span class="scope"># of Vessel</span>
+          <div class="toggle" role="group" aria-label="View">
+            <button data-view="chart" aria-pressed="true" title="Chart view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M7 2v5h5" stroke-width="1.6"/></svg></button>
+            <button data-view="table" aria-pressed="false" title="Table view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/><path d="M1 5h12M1 9h12M5 1v12"/></svg></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="view-chart">
+            <svg class="donut js-donut-eq" viewBox="0 0 120 120" role="img" aria-label="2 of 20 equipment in alarm"></svg>
+            <table class="sum"><thead><tr><th>Status</th><th>Count</th><th>Rate</th></tr></thead><tbody class="js-eq-sum"></tbody></table>
+          </div>
+          <div class="view-table" hidden>
+            <table class="detail"><thead><tr><th>Equipment</th><th>Status</th><th class="r">Alarms</th></tr></thead><tbody class="js-eq-rows"></tbody></table>
+          </div>
+        </div>
+      </article>
+
+      <!-- Alarm -->
+      <article class="card" data-card="alarm">
+        <div class="card-head">
+          <h2>Alarm</h2>
+          <span class="scope"># of Vessel</span>
+          <div class="toggle" role="group" aria-label="View">
+            <button data-view="chart" aria-pressed="true" title="Chart view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M7 2v5h5" stroke-width="1.6"/></svg></button>
+            <button data-view="table" aria-pressed="false" title="Table view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/><path d="M1 5h12M1 9h12M5 1v12"/></svg></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="view-chart">
+            <svg class="donut js-donut-al" viewBox="0 0 120 120" role="img" aria-label="12 alarms by type"></svg>
+            <table class="sum"><thead><tr><th>Type</th><th>Count</th><th>Rate</th></tr></thead><tbody class="js-al-sum"></tbody></table>
+          </div>
+          <div class="view-table" hidden>
+            <table class="detail"><thead><tr><th>Type</th><th>Parameter</th><th class="r">Count</th></tr></thead><tbody class="js-al-rows"></tbody></table>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Worst parameter -->
+    <section class="card worst">
+      <div class="card-head">
+        <h2>Worst Parameters</h2>
+        <span class="scope">Ranked by anomaly score · last 24 h</span>
+      </div>
+      <div class="tabs js-tabs" role="tablist"></div>
+      <div class="worst-body">
+        <div class="insight">
+          <p class="headline js-headline"></p>
+          <p class="js-desc"></p>
+          <dl class="facts js-facts"></dl>
+          <div class="reco"><b>Recommended action</b><span class="js-reco"></span></div>
+        </div>
+        <div class="trace">
+          <div class="trace-head">
+            <div><b>Trace Chart</b> <span class="tag js-tag"></span></div>
+            <div class="trace-legend">
+              <span><svg width="14" height="8"><line x1="0" y1="4" x2="14" y2="4" stroke="var(--accent)" stroke-width="2"/></svg>Value</span>
+              <span><svg width="14" height="8"><line x1="0" y1="4" x2="14" y2="4" stroke="var(--crit)" stroke-width="2"/></svg>Abnormal</span>
+              <span><svg width="14" height="8"><rect width="14" height="8" fill="var(--band)" stroke="var(--good)" stroke-dasharray="2 2"/></svg>Normal range</span>
+            </div>
+          </div>
+          <svg class="js-trace" viewBox="0 0 620 250" role="img" aria-label="Trace chart"></svg>
+        </div>
+      </div>
+    </section>
+
+    <div class="note">Prototype for review. All values are sample data.</div>
+  </main>
+
+  <!-- ===== Right: voyage panel ===== -->
+  <aside class="side">
+    <section>
+      <h2>Voyage Progress</h2>
+      <div class="voyage-ends">
+        <div><span>Depart</span><b>Busan</b><span class="num">Oct 10, 2026</span></div>
+        <div><span>Arrive</span><b>Ras Tanura</b><span class="num">ETA Nov 1, 2026</span></div>
+      </div>
+      <div class="track js-track">
+        <div class="rail"></div>
+        <div class="done js-done"></div>
+        <svg class="ship js-ship" viewBox="0 0 46 34" aria-label="Current vessel position">
+          <path d="M3 21h40l-6 10H9z" fill="currentColor"/>
+          <rect x="22" y="11" width="12" height="9" rx="1" fill="currentColor"/>
+          <rect x="25" y="4" width="4" height="7" fill="currentColor"/>
+          <rect x="8" y="15" width="11" height="5" fill="currentColor" opacity=".55"/>
+          <circle cx="27" cy="2" r="1.6" fill="currentColor" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="voyage-stats">
+        <div><span>Progress</span><b class="num">72%</b></div>
+        <div><span>Speed</span><b class="num">15.2 kn</b></div>
+        <div><span>Remaining</span><b class="num">1,640 nm</b></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Voyage Log</h2>
+      <div class="log">
+        <div class="log-vessel">
+          <div><b class="js-vessel">MARIN</b><small>LNG Carrier · IMO 9812345</small></div>
+          <span class="pill good">Condition: Good</span>
+        </div>
+        <dl class="kv">
+          <dt>Time</dt><dd class="num mono js-clock">2026-10-27 10:25:24</dd>
+          <dt>Position</dt><dd class="num">18.42° N, 62.15° E</dd>
+          <dt>Area</dt><dd>Arabian Sea</dd>
+          <dt>Heading</dt><dd class="num">298°</dd>
+        </dl>
+        <div class="weather">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13" cy="12" r="5"/><path d="M13 2v2M3 12h2M5.9 4.9l1.4 1.4M20.1 4.9l-1.4 1.4"/><path d="M12 28h14a5 5 0 0 0 0-10 7 7 0 0 0-13 2 4 4 0 0 0-1 8z" stroke="var(--muted)" fill="var(--surface)"/></svg>
+          <div><b class="num">29°C</b><br><span class="note">Partly cloudy</span></div>
+          <div>Wind NE 14 kn<br>Wave 1.8 m · Vis 8 nm</div>
+        </div>
+        <div class="actions">
+          <div class="actions-head">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>
+            <h3>Action items</h3>
+            <span class="count">3</span>
+          </div>
+          <ul class="list">
+            <li><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span></li>
+            <li><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span></li>
+            <li><span class="pill info">Inspect</span><span><b>Check Boiler feed water pump</b><span class="rul">Before arrival at Ras Tanura</span></span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Today's alarms to check</h3>
+          <ul class="list">
+            <li><span class="pill warn">Unknown</span>Main Engine – Gas Pressure (4×)</li>
+            <li><span class="pill crit">Known</span>Main Engine – Jacket Cooling Water Temp (2×)</li>
+            <li><span class="pill warn">Unknown</span>Generator #1 – Exhaust Temperature (1×)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script>
+(function () {
+  // ---------- Sample data ----------
+  const equipment = [
+    ["Main Engine", 78, 9], ["Generator #1", 84, 3], ["Boiler", 88, 0], ["Scrubber", 93, 0],
+    ["Fuel Oil Purifier", 95, 0], ["Generator #2", 96, 0], ["Main Air Compressor", 96, 0],
+    ["Cooling Water Pump", 96, 0], ["Generator #3", 97, 0], ["Lube Oil Purifier", 97, 0],
+    ["Ballast Pump", 97, 0], ["Steering Gear", 97, 0], ["Fresh Water Generator", 97, 0],
+    ["Shaft Generator", 98, 0], ["Cargo Pump", 98, 0], ["Fire Pump", 98, 0],
+    ["Sewage Treatment", 98, 0], ["Bilge Pump", 99, 0], ["HVAC", 99, 0], ["Incinerator", 99, 0]
+  ];
+  const alarms = [
+    ["Unknown", "Gas Pressure", "Main Engine", 4],
+    ["Unknown", "Exhaust Temperature", "Generator #1", 1],
+    ["Known", "Jacket Cooling Water Temp", "Main Engine", 2],
+    ["Known", "Scavenge Air Pressure", "Main Engine", 1],
+    ["Normal", "Fuel Oil Inlet Temp", "Main Engine", 2],
+    ["Normal", "Lube Oil Pressure", "Generator #1", 2]
+  ];
+  const alarmTypes = { Unknown: "warn", Known: "crit", Normal: "info" };
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  // ---------- Card tables ----------
+  const healthState = v => v < 80 ? ["crit", "Critical"] : v < 90 ? ["warn", "Caution"] : ["good", "Good"];
+  document.querySelector(".js-health-rows").innerHTML = equipment.map(([n, h]) => {
+    const [cls, label] = healthState(h);
+    return `<tr><td>${n}</td><td class="num" style="white-space:nowrap"><span class="hbar"><i style="width:${h}%"></i></span>${h}%</td><td class="r"><span class="pill ${cls}">${label}</span></td></tr>`;
+  }).join("");
+
+  document.querySelector(".js-eq-rows").innerHTML = equipment.map(([n, , a]) =>
+    `<tr><td>${n}</td><td>${a ? '<span class="pill crit">Alarm</span>' : '<span class="pill good">No Alarm</span>'}</td><td class="r num">${a}</td></tr>`
+  ).join("");
+
+  document.querySelector(".js-al-rows").innerHTML = alarms.map(([t, p, e, c]) =>
+    `<tr><td><span class="pill ${alarmTypes[t]}">${t}</span></td><td>${p}<small>${e}</small></td><td class="r num">${c}</td></tr>`
+  ).join("");
+
+  // ---------- Donuts ----------
+  function donut(svg, segments, total, label) {
+    let offset = 0, out = `<circle cx="60" cy="60" r="44" fill="none" stroke="var(--surface-2)" stroke-width="16"/>`;
+    segments.forEach(s => {
+      const len = s.value / total * 100;
+      out += `<circle class="seg" data-label="${s.name}" data-value="${s.value} (${Math.round(len)}%)" data-color="${s.color}"
+        cx="60" cy="60" r="44" fill="none" stroke="var(${s.color})" stroke-width="16" pathLength="100"
+        stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;
+      offset += len;
+    });
+    out += `<text x="60" y="56" text-anchor="middle" font-size="11" fill="var(--muted)">${label}</text>
+            <text x="60" y="76" text-anchor="middle" font-size="22" font-weight="700" fill="var(--fg)">${total}</text>`;
+    svg.innerHTML = out;
+  }
+  function summary(tbody, segments, total) {
+    tbody.innerHTML = segments.map(s =>
+      `<tr><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${Math.round(s.value / total * 100)}%</td></tr>`
+    ).join("");
+  }
+  const inAlarm = equipment.filter(e => e[2] > 0).length;
+  const eqSeg = [
+    { name: "Alarm", value: inAlarm, color: "--crit" },
+    { name: "No Alarm", value: equipment.length - inAlarm, color: "--good" }
+  ];
+  donut(document.querySelector(".js-donut-eq"), eqSeg, equipment.length, "Total EQP");
+  summary(document.querySelector(".js-eq-sum"), eqSeg, equipment.length);
+
+  const sumType = t => alarms.filter(a => a[0] === t).reduce((s, a) => s + a[3], 0);
+  const alSeg = [
+    { name: "Unknown", value: sumType("Unknown"), color: "--warn" },
+    { name: "Known", value: sumType("Known"), color: "--crit" },
+    { name: "Normal", value: sumType("Normal"), color: "--info" }
+  ];
+  const alTotal = alSeg.reduce((s, a) => s + a.value, 0);
+  donut(document.querySelector(".js-donut-al"), alSeg, alTotal, "Total");
+  summary(document.querySelector(".js-al-sum"), alSeg, alTotal);
+
+  // ---------- Chart tooltips ----------
+  const tip = document.createElement("div");
+  tip.className = "chart-tip";
+  tip.hidden = true;
+  document.body.append(tip);
+  document.querySelector(".kpis").addEventListener("mousemove", e => {
+    const seg = e.target.closest(".seg");
+    if (!seg) { tip.hidden = true; return; }
+    tip.innerHTML = `<i style="background:var(${seg.dataset.color})"></i>${seg.dataset.label}<b>${seg.dataset.value}</b>`;
+    tip.hidden = false;
+    const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+    tip.style.left = x + "px";
+    tip.style.top = (e.clientY + 14) + "px";
+  });
+  document.querySelector(".kpis").addEventListener("mouseleave", () => { tip.hidden = true; });
+
+  // ---------- Chart / table toggle ----------
+  document.querySelectorAll("[data-card]").forEach(card => {
+    card.querySelectorAll(".toggle button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const view = btn.dataset.view;
+        card.querySelectorAll(".toggle button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+        card.querySelector(".view-chart").hidden = view !== "chart";
+        card.querySelector(".view-table").hidden = view !== "table";
+      });
+    });
+  });
+
+  // ---------- Worst parameters ----------
+  function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function series(seed, base, noise, onset, shape) {
+    const r = rng(seed), pts = [];
+    for (let i = 0; i < 96; i++) {
+      let v = base + (r() - 0.5) * 2 * noise;
+      if (i >= onset) v += shape(i - onset, r);
+      pts.push(v);
+    }
+    return pts;
+  }
+  const worst = [
+    {
+      eq: "Main Engine", pm: "Gas Pressure", unit: "bar", tag: "ME-01 / GAS_PRESS_IN",
+      desc: "Gas pressure has been falling steadily for the last 7 hours. This pattern differs from normal operation at the same engine load.",
+      score: 0.91, type: "Unknown", since: "2026-10-27 03:10", now: "7.02 bar", range: "7.9 – 9.1 bar",
+      reco: "Check the gas supply line and the pressure regulating valve. Compare with the redundant pressure sensor.",
+      data: series(11, 8.5, 0.12, 68, (k) => -k * 0.055), lo: 7.9, hi: 9.1, onset: 68
+    },
+    {
+      eq: "Generator #1", pm: "Exhaust Temperature", unit: "°C", tag: "GE-01 / EXH_TEMP_CYL3",
+      desc: "Cylinder 3 exhaust temperature is rising while load is stable. The other cylinders remain within their normal range.",
+      score: 0.78, type: "Unknown", since: "2026-10-27 04:55", now: "427 °C", range: "365 – 405 °C",
+      reco: "Inspect the cylinder 3 fuel injector and the turbocharger air filter at the next opportunity.",
+      data: series(23, 385, 4, 75, (k) => k * 2.1), lo: 365, hi: 405, onset: 75
+    },
+    {
+      eq: "Boiler", pm: "Feed Water Flow", unit: "m³/h", tag: "BLR-01 / FW_FLOW",
+      desc: "Feed water flow is oscillating with a growing amplitude. No alarm has been raised yet; the anomaly model flagged it first.",
+      score: 0.64, type: "No alarm", since: "2026-10-27 01:30", now: "13.4 m³/h", range: "11.0 – 13.0 m³/h",
+      reco: "Check the feed water pump and the level control valve before arrival at Ras Tanura.",
+      data: series(37, 12, 0.18, 60, (k) => Math.sin(k / 1.6) * k * 0.045), lo: 11, hi: 13, onset: 60
+    }
+  ];
+
+  const tabs = document.querySelector(".js-tabs");
+  tabs.innerHTML = worst.map((w, i) =>
+    `<button class="tab" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="rank">#${i + 1}</span>${w.eq} – ${w.pm}</button>`
+  ).join("");
+  tabs.addEventListener("click", e => {
+    const b = e.target.closest(".tab"); if (!b) return;
+    tabs.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t === b)));
+    showWorst(+b.dataset.i);
+  });
+
+  function showWorst(i) {
+    const w = worst[i];
+    document.querySelector(".js-headline").innerHTML =
+      `<span class="eq">${w.eq}</span> – <span class="pm">${w.pm}</span> requires attention.`;
+    document.querySelector(".js-desc").textContent = w.desc;
+    const typePill = w.type === "No alarm" ? "good" : alarmTypes[w.type];
+    document.querySelector(".js-facts").innerHTML = `
+      <div><dt>Anomaly score</dt><dd class="num">${w.score.toFixed(2)}</dd></div>
+      <div><dt>Alarm type</dt><dd><span class="pill ${typePill}">${w.type}</span></dd></div>
+      <div><dt>Current value</dt><dd class="num">${w.now}</dd></div>
+      <div><dt>Normal range</dt><dd class="num">${w.range}</dd></div>
+      <div><dt>First detected</dt><dd class="num">${w.since}</dd></div>`;
+    document.querySelector(".js-reco").textContent = w.reco;
+    document.querySelector(".js-tag").textContent = w.tag;
+    drawTrace(w);
+  }
+
+  function drawTrace(w) {
+    const W = 620, H = 250, L = 48, R = 12, T = 22, B = 30;
+    const vals = w.data, n = vals.length;
+    const minV = Math.min(...vals, w.lo), maxV = Math.max(...vals, w.hi);
+    const pad = (maxV - minV) * 0.12;
+    const y0 = minV - pad, y1 = maxV + pad;
+    const x = i => L + i / (n - 1) * (W - L - R);
+    const y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+    let out = "";
+    // grid + y labels
+    for (let k = 0; k <= 4; k++) {
+      const v = y0 + (y1 - y0) * k / 4, yy = y(v);
+      out += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/>`;
+      out += `<text x="${L - 6}" y="${yy + 3}" text-anchor="end">${v.toFixed(v >= 100 ? 0 : 1)}</text>`;
+    }
+    // x labels: every 6 h over 24 h ending 10:25
+    const hours = ["10:25\nOct 26", "16:25", "22:25", "04:25", "10:25"];
+    hours.forEach((h, k) => {
+      const xx = x((n - 1) * k / 4);
+      out += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--line)" stroke-dasharray="2 3"/>`;
+      out += `<text x="${xx}" y="${H - B + 16}" text-anchor="${k === 0 ? "start" : k === 4 ? "end" : "middle"}">${h.split("\n")[0]}</text>`;
+    });
+    // normal band
+    out += `<rect x="${L}" y="${y(w.hi)}" width="${W - L - R}" height="${y(w.lo) - y(w.hi)}" fill="var(--band)"/>`;
+    out += `<line x1="${L}" x2="${W - R}" y1="${y(w.hi)}" y2="${y(w.hi)}" stroke="var(--good)" stroke-dasharray="4 3"/>`;
+    out += `<line x1="${L}" x2="${W - R}" y1="${y(w.lo)}" y2="${y(w.lo)}" stroke="var(--good)" stroke-dasharray="4 3"/>`;
+    // detection marker
+    const xo = x(w.onset);
+    out += `<rect x="${xo}" y="${T}" width="${W - R - xo}" height="${H - T - B}" fill="var(--crit)" opacity="0.06"/>`;
+    out += `<line x1="${xo}" x2="${xo}" y1="${T}" y2="${H - B}" stroke="var(--crit)" stroke-width="1"/>`;
+    out += `<text x="${xo + 4}" y="${T + 10}" text-anchor="start" style="fill:var(--crit)">Anomaly detected</text>`;
+    // lines
+    const path = (from, to) => vals.slice(from, to).map((v, j) => `${j ? "L" : "M"}${x(from + j).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    out += `<path d="${path(0, w.onset + 1)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+    out += `<path d="${path(w.onset, n)}" fill="none" stroke="var(--crit)" stroke-width="2"/>`;
+    out += `<circle cx="${x(n - 1)}" cy="${y(vals[n - 1])}" r="4" fill="var(--crit)" stroke="var(--surface)" stroke-width="2"/>`;
+    out += `<text x="${L - 6}" y="10" text-anchor="end">${w.unit}</text>`;
+    document.querySelector(".js-trace").innerHTML = out;
+  }
+  showWorst(0);
+
+  // ---------- Voyage track ----------
+  const track = document.querySelector(".js-track");
+  const waypoints = [["Busan", 0], ["Singapore", 38], ["Colombo", 58], ["Ras Tanura", 100]];
+  const progress = 72;
+  waypoints.forEach(([name, p], i) => {
+    const dot = document.createElement("span");
+    dot.className = "wp" + (p <= progress ? " passed" : "");
+    dot.style.left = p + "%";
+    const lab = document.createElement("span");
+    lab.className = "wp-label" + (i === 0 ? " first" : i === waypoints.length - 1 ? " last" : "");
+    lab.style.left = p + "%";
+    lab.textContent = name;
+    track.append(dot, lab);
+  });
+  document.querySelector(".js-done").style.width = progress + "%";
+  document.querySelector(".js-ship").style.left = progress + "%";
+
+  // ---------- Vessel selection ----------
+  document.querySelectorAll("[data-vessel]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-vessel]").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".js-vessel").forEach(el => el.textContent = btn.dataset.vessel);
+    });
+  });
+
+  // ---------- Light / dark toggle (defaults to the OS setting) ----------
+  const themeBtn = document.querySelector(".js-theme");
+  const root = document.documentElement;
+  const osDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : osDark.matches;
+  function syncThemeBtn() {
+    const dark = isDark();
+    themeBtn.classList.toggle("is-dark", dark);
+    const label = dark ? "Switch to light mode" : "Switch to dark mode";
+    themeBtn.title = label;
+    themeBtn.setAttribute("aria-label", label);
+  }
+  try { const saved = localStorage.getItem("theme"); if (saved) root.dataset.theme = saved; } catch (e) {}
+  syncThemeBtn();
+  osDark.addEventListener("change", syncThemeBtn);
+  themeBtn.addEventListener("click", () => {
+    root.dataset.theme = isDark() ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+    syncThemeBtn();
+  });
+
+  // ---------- Live clock (starts from sample time) ----------
+  let t = new Date(2026, 9, 27, 10, 25, 24).getTime();
+  const fmt = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") +
+    " " + [d.getHours(), d.getMinutes(), d.getSeconds()].map(v => String(v).padStart(2, "0")).join(":");
+  setInterval(() => {
+    t += 1000;
+    document.querySelectorAll(".js-clock").forEach(el => el.textContent = fmt(new Date(t)));
+  }, 1000);
+})();
+</script>
+</body>
+</html>
