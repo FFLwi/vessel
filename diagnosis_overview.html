@@ -104,13 +104,13 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   border: 0; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.14);
   color: #fff; white-space: nowrap; cursor: pointer;
 }
-.page-tab[aria-selected="true"] { background: var(--surface); color: var(--fg); font-weight: 600; }
+.page-tab[aria-selected="true"] { background: var(--bg); color: var(--fg); font-weight: 600; }
 
-/* ---------- Filter bar: vessel selection + period ---------- */
+/* ---------- Filter bar: first row of the tab page (vessel selection + period) ---------- */
 .filterbar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
-  background: var(--surface); border-bottom: 1px solid var(--line);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--bg);
 }
 .filterbar .lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 4px; }
 .vchips { display: flex; gap: 6px; overflow-x: auto; }
