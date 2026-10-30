@@ -414,6 +414,20 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .actions .list { gap: 10px; }
 .actions .list b { font-weight: 600; }
 .list .rul { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; }
+.list li.rul-item { display: block; }
+.rul-btn {
+  display: flex; gap: 8px; align-items: flex-start; width: 100%; padding: 4px; margin: -4px;
+  border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; width: calc(100% + 8px);
+}
+.rul-btn:hover { background: color-mix(in srgb, var(--crit) 8%, transparent); }
+.rul-btn .pill { flex: none; margin-top: 1px; }
+.rul-btn .chev { flex: none; margin: 4px 0 0 auto; color: var(--muted); transition: transform 0.15s ease; }
+.rul-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.rul-chart { margin-top: 8px; padding: 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+.rul-chart svg { display: block; width: 100%; max-width: 360px; height: auto; }
+.rul-chart text { font-family: var(--font-sans); font-size: 10px; fill: var(--muted); }
+.rul-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 10px; color: var(--muted); }
+.rul-legend i { display: inline-block; width: 12px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 4px; }
 
 .note { font-size: 11px; color: var(--muted); }
 
@@ -443,6 +457,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   .drawer, .drawer-backdrop, .rt i, .rt i::after { transition: none; }
   .icon-btn.spin svg { animation: none; }
   .ship-view .ping { animation: none; opacity: 0.4; }
+  .rul-btn .chev { transition: none; }
   .track .ship { transition: none; }
 }
 </style>
@@ -654,25 +669,16 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       </div>
     </section>
 
-    <section class="log">
+    <section>
       <div class="actions">
         <div class="actions-head">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>
-          <h3>Action items</h3>
-          <span class="count">3</span>
+          <h3>RUL</h3>
+          <span class="count">2</span>
         </div>
         <ul class="list">
-          <li><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span></li>
-          <li><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span></li>
-          <li><span class="pill info">Inspect</span><span><b>Check Boiler feed water pump</b><span class="rul">Before arrival at Ras Tanura</span></span></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Today's alarms to check</h3>
-        <ul class="list">
-          <li><span class="pill st-undet">Undetected Fault</span>Auxiliary Boiler – Steam Pressure Low</li>
-          <li><span class="pill good">Good</span>Generator #1 – Exhaust Temperature (rising)</li>
-          <li><span class="pill good">Good</span>Boiler – Feed Water Flow (oscillating)</li>
+          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="0"><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
+          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="1"><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
         </ul>
       </div>
     </section>
@@ -892,6 +898,63 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     document.querySelector(".js-ship-map").innerHTML = o;
   }
   showDiagnosis("Undetected Fault");
+
+  // ---------- RUL mini charts ----------
+  // Predicted remaining useful life over the last 30 days, with the forecast to end of life
+  const rulItems = [
+    { rul: 12, limit: 14, seed: 41, color: "--crit" },
+    { rul: 21, limit: 14, seed: 53, color: "--warn" }
+  ];
+  const today = new Date(2026, 9, 27);
+  const rng = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  const md = d => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  function drawRul(item) {
+    const W = 280, H = 118, L = 26, R = 8, T = 10, B = 18, past = 30, span = past + item.rul;
+    const r = rng(item.seed);
+    const pts = [];
+    for (let k = 0; k <= past; k++) pts.push(item.rul + (past - k) * 0.95 + (r() - 0.5) * 2.4);
+    pts[past] = item.rul;
+    const maxV = Math.ceil((Math.max(...pts) + 4) / 10) * 10;
+    const x = d => L + d / span * (W - L - R), y = v => T + (1 - v / maxV) * (H - T - B);
+    let o = "";
+    [0, maxV / 2, maxV].forEach(v => {
+      o += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>`;
+      o += `<text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v}</text>`;
+    });
+    // prediction band
+    const up = pts.map((v, k) => `${x(k).toFixed(1)},${y(v + 3 + (past - k) * 0.03).toFixed(1)}`);
+    const dn = pts.map((v, k) => `${x(k).toFixed(1)},${y(Math.max(0, v - 3 - (past - k) * 0.03)).toFixed(1)}`).reverse();
+    o += `<polygon points="${up.concat(dn).join(" ")}" fill="var(${item.color})" fill-opacity=".12"/>`;
+    // replace threshold
+    o += `<line x1="${L}" x2="${W - R}" y1="${y(item.limit)}" y2="${y(item.limit)}" stroke="var(--crit)" stroke-dasharray="4 3"/>`;
+    o += `<text x="${L + 4}" y="${y(item.limit) + 10}" style="fill:var(--crit)">Replace at ${item.limit} d</text>`;
+    // history + forecast
+    o += `<path d="${pts.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join("")}" fill="none" stroke="var(${item.color})" stroke-width="1.8"/>`;
+    o += `<line x1="${x(past)}" y1="${y(item.rul)}" x2="${x(span)}" y2="${y(0)}" stroke="var(${item.color})" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+    // today
+    o += `<line x1="${x(past)}" x2="${x(past)}" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="2 2"/>`;
+    o += `<circle cx="${x(past)}" cy="${y(item.rul)}" r="3.5" fill="var(${item.color})" stroke="var(--surface)" stroke-width="1.5"/>`;
+    o += `<text x="${x(past) - 4}" y="${y(item.rul) - 6}" text-anchor="end" style="fill:var(--fg);font-weight:600">${item.rul} d</text>`;
+    const end = new Date(today); end.setDate(end.getDate() + item.rul);
+    const start = new Date(today); start.setDate(start.getDate() - past);
+    o += `<text x="${L}" y="${H - 4}">${md(start)}</text>`;
+    o += `<text x="${x(past)}" y="${H - 4}" text-anchor="middle">Today</text>`;
+    o += `<text x="${W - R}" y="${H - 4}" text-anchor="end">${md(end)}</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Remaining useful life ${item.rul} days, end of life ${md(end)}">${o}</svg>
+      <div class="rul-legend"><span><i style="border-color:var(${item.color})"></i>Predicted RUL (days)</span><span><i style="border-color:var(${item.color});border-top-style:dashed"></i>Forecast to ${md(end)}</span></div>`;
+  }
+  document.querySelectorAll(".rul-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      document.querySelectorAll(".rul-btn").forEach(b => {
+        const on = b === btn && open;
+        b.setAttribute("aria-expanded", String(on));
+        const chart = b.nextElementSibling;
+        if (on && !chart.innerHTML) chart.innerHTML = drawRul(rulItems[+b.dataset.rul]);
+        chart.hidden = !on;
+      });
+    });
+  });
 
   // ---------- Voyage track ----------
   const track = document.querySelector(".js-track");
