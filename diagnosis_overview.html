@@ -28,6 +28,7 @@
   --health-rest: #34424F;
   --band: rgba(30, 154, 96, 0.10);
   --st-crit: #9B2335; --st-undet: #C2652A; --st-unk: #2E3F8F; --st-off: #98A4AE;
+  --amber-ink: #8F6400;
   --bar-bg: #2F5BD8;
   --bar-pill: #2449B8;
   --font-sans: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -42,6 +43,7 @@
     --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
     --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
     --st-crit: #E2627A; --st-undet: #E8894A; --st-unk: #7D8FE6; --st-off: #7C8A96;
+    --amber-ink: #F2C94C;
     --bar-bg: #1F3E99; --bar-pill: #17307A;
     color-scheme: dark;
   }
@@ -53,6 +55,7 @@
   --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
   --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
     --st-crit: #E2627A; --st-undet: #E8894A; --st-unk: #7D8FE6; --st-off: #7C8A96;
+    --amber-ink: #F2C94C;
     --bar-bg: #1F3E99; --bar-pill: #17307A;
   color-scheme: dark;
 }
@@ -249,7 +252,7 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .d-item.active svg { color: var(--accent); }
 .drawer-foot { padding: 10px 20px 14px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); }
 
-.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.kpis { display: grid; grid-template-columns: minmax(250px, 2fr) minmax(0, 3fr); gap: 14px; }
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -443,7 +446,17 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .actions .list { gap: 10px; }
 .actions .list b { font-weight: 600; }
 .list .rul { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; }
-.list li.rul-item { display: block; }
+.list li.rul-item { display: block; border-left: 3px solid var(--lvl); padding-left: 8px;
+  background: color-mix(in srgb, var(--lvl) 7%, transparent); border-radius: 0 6px 6px 0; padding-block: 6px; }
+/* RUL level: plan now (orange) / soon (yellow) / ok (green) */
+.lvl-plan { --lvl: var(--warn); --lvl-ink: var(--warn); }
+.lvl-soon { --lvl: var(--health); --lvl-ink: var(--amber-ink); }
+.lvl-ok { --lvl: var(--good); --lvl-ink: var(--good); }
+.pill.lvl { color: var(--lvl-ink); background: color-mix(in srgb, var(--lvl) 20%, transparent); }
+.list .rul .d { color: var(--lvl-ink); font-weight: 600; }
+.rul-legend-top { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 10px; font-size: 11px; color: var(--muted); }
+.rul-legend-top span { display: inline-flex; align-items: center; gap: 5px; }
+.rul-legend-top i { width: 8px; height: 8px; border-radius: 50%; background: var(--lvl); }
 .rul-btn {
   display: flex; gap: 8px; align-items: flex-start; width: 100%; padding: 4px; margin: -4px;
   border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; width: calc(100% + 8px);
@@ -704,9 +717,10 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
           <span class="count">2</span>
         </div>
         <p class="actions-sub">Remaining useful life · click an item to see its trend</p>
+        <div class="rul-legend-top"><span class="lvl-plan"><i></i>Plan now ≤ 14 d</span><span class="lvl-soon"><i></i>Soon ≤ 30 d</span><span class="lvl-ok"><i></i>OK &gt; 30 d</span></div>
         <ul class="list">
-          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="0"><span class="pill info">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
-          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="1"><span class="pill info">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
+          <li class="rul-item lvl-plan"><button class="rul-btn" type="button" aria-expanded="false" data-rul="0"><span class="pill lvl">12 d</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ <span class="d">12 days</span></span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
+          <li class="rul-item lvl-soon"><button class="rul-btn" type="button" aria-expanded="false" data-rul="1"><span class="pill lvl">21 d</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ <span class="d">21 days</span></span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
         </ul>
       </div>
     </section>
@@ -1046,8 +1060,8 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   // ---------- RUL mini charts ----------
   // Predicted remaining useful life over the last 30 days, with the forecast to end of life
   const rulItems = [
-    { rul: 12, limit: 14, seed: 41, color: "--info" },
-    { rul: 21, limit: 14, seed: 53, color: "--info" }
+    { rul: 12, limit: 14, seed: 41, color: "--warn" },
+    { rul: 21, limit: 14, seed: 53, color: "--health" }
   ];
   const today = new Date(2026, 9, 27);
   const rng = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;
