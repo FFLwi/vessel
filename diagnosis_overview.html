@@ -323,36 +323,48 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .chart-tip i { width: 8px; height: 8px; border-radius: 50%; }
 .chart-tip b { margin-left: 6px; font-variant-numeric: tabular-nums; }
 
-/* ---------- Worst parameter ---------- */
+/* ---------- Equipment diagnosis (opened from the Alarm card) ---------- */
 .worst { gap: 14px; }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.tab {
-  display: flex; align-items: center; gap: 8px;
-  border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px;
-  padding: 7px 12px; cursor: pointer; font-size: 13px; text-align: left;
-}
-.tab .rank { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
-.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-.tab[aria-selected="true"] .rank { color: rgba(255,255,255,0.75); }
-.worst-body { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr); gap: 18px; }
-.insight { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.worst .card-head { flex-wrap: wrap; }
+.worst .card-head .pill { white-space: nowrap; }
+.worst-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; }
+.insight { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.diag-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
 .insight .headline { font-size: 19px; font-weight: 600; line-height: 1.3; margin: 0; text-wrap: balance; }
-.insight .headline .eq { color: var(--crit); }
-.insight .headline .pm { color: var(--info); }
-.insight p { margin: 0; color: var(--muted); max-width: 60ch; }
-.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 0; }
-.facts div { min-width: 0; }
-.facts dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.facts dd { margin: 2px 0 0; font-weight: 600; }
-.reco { border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; }
-.reco b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
-.trace { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-width: 0; }
-.trace-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 6px; }
-.trace-head .tag { color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
-.trace-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 11px; }
-.trace-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.trace svg { width: 100%; height: auto; display: block; }
-.trace text { fill: var(--muted); font-size: 10px; font-family: var(--font-mono); }
+.insight .headline em { font-style: normal; color: var(--st-undet); }
+.insight .eq-sub { margin: -8px 0 0; font-size: 12px; color: var(--muted); }
+.model { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.model-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.model-head .k { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 4px; }
+.k.sup { color: #5B3BA6; background: color-mix(in srgb, #7A55D6 16%, transparent); }
+.k.uns { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.model-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; font-size: 12px; align-items: baseline; }
+.model-row > span:first-child { color: var(--muted); }
+.model-row b { font-weight: 600; }
+.meter { display: flex; align-items: center; gap: 8px; }
+.meter .track2 { position: relative; flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); }
+.meter .track2 i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
+.meter .track2 u { position: absolute; top: -4px; width: 2px; height: 12px; background: var(--fg); }
+.meter small { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.param-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.param-list li { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.param-list li::before { content: "•"; color: var(--muted); margin-right: 6px; }
+.ord { display: block; font-size: 11px; color: var(--st-undet); font-weight: 600; }
+.ship-view { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-width: 0;
+  display: flex; flex-direction: column; }
+.ship-view svg { margin-block: auto; }
+.ship-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; font-size: 12px; margin-bottom: 6px; }
+.ship-head span { color: var(--muted); }
+.ship-view svg { width: 100%; height: auto; display: block; color: var(--muted); }
+.ship-view text { font-family: var(--font-sans); fill: var(--muted); font-size: 10px; }
+.ship-view .ping { transform-box: fill-box; transform-origin: center; animation: ping 1.6s ease-out infinite; }
+@keyframes ping { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(2.2); opacity: 0; } }
+.diag-empty { display: grid; place-items: center; gap: 4px; min-height: 220px; text-align: center; color: var(--muted); }
+.diag-empty b { color: var(--fg); font-size: 15px; }
+[data-card="alarm"] .pick { cursor: pointer; }
+[data-card="alarm"] .pick:hover td { background: var(--surface-2); }
+[data-card="alarm"] .pick.on td { background: var(--accent-soft); }
+[data-card="alarm"] .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* ---------- Right panel ---------- */
 .side {
@@ -440,6 +452,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 @media (prefers-reduced-motion: reduce) {
   .drawer, .drawer-backdrop, .rt i, .rt i::after { transition: none; }
   .icon-btn.spin svg { animation: none; }
+  .ship-view .ping { animation: none; opacity: 0.4; }
   .track .ship { transition: none; }
 }
 </style>
@@ -626,32 +639,21 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       </article>
     </section>
 
-    <!-- Worst parameter -->
+    <!-- Equipment diagnosis: shows the equipment of the status picked in the Alarm card -->
     <section class="card worst">
       <div class="card-head">
-        <h2>Worst Parameters</h2>
-        <span class="scope">Ranked by anomaly score · last 24 h</span>
+        <h2>Equipment Diagnosis</h2>
+        <span class="pill js-diag-pill"></span>
+        <span class="scope">Pick a status in the Alarm card</span>
       </div>
-      <div class="tabs js-tabs" role="tablist"></div>
-      <div class="worst-body">
-        <div class="insight">
-          <p class="headline js-headline"></p>
-          <p class="js-desc"></p>
-          <dl class="facts js-facts"></dl>
-          <div class="reco"><b>Recommended action</b><span class="js-reco"></span></div>
-        </div>
-        <div class="trace">
-          <div class="trace-head">
-            <div><b>Trace Chart</b> <span class="tag js-tag"></span></div>
-            <div class="trace-legend">
-              <span><svg width="14" height="8"><line x1="0" y1="4" x2="14" y2="4" stroke="var(--accent)" stroke-width="2"/></svg>Value</span>
-              <span><svg width="14" height="8"><line x1="0" y1="4" x2="14" y2="4" stroke="var(--crit)" stroke-width="2"/></svg>Abnormal</span>
-              <span><svg width="14" height="8"><rect width="14" height="8" fill="var(--band)" stroke="var(--good)" stroke-dasharray="2 2"/></svg>Normal range</span>
-            </div>
-          </div>
-          <svg class="js-trace" viewBox="0 0 620 250" role="img" aria-label="Trace chart"></svg>
+      <div class="worst-body js-diag-body">
+        <div class="insight js-diag-info"></div>
+        <div class="ship-view">
+          <div class="ship-head"><b>Equipment location</b><span class="js-ship-caption"></span></div>
+          <svg class="js-ship-map" viewBox="0 0 640 280" role="img" aria-label="Vessel side view with the equipment location"></svg>
         </div>
       </div>
+      <div class="diag-empty js-diag-empty" hidden></div>
     </section>
 
     <div class="note">Prototype for review. All values are sample data.</div>
@@ -716,7 +718,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
         <div>
           <h3>Today's alarms to check</h3>
           <ul class="list">
-            <li><span class="pill st-undet">Undetected Fault</span>Main Engine – Gas Pressure (4×)</li>
+            <li><span class="pill st-undet">Undetected Fault</span>Auxiliary Boiler – Steam Pressure Low</li>
             <li><span class="pill good">Good</span>Generator #1 – Exhaust Temperature (rising)</li>
             <li><span class="pill good">Good</span>Boiler – Feed Water Flow (oscillating)</li>
           </ul>
@@ -741,7 +743,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   // Alarm status of all 43 monitored equipment (sample values from the live system)
   const alarms = [
     { name: "Critical", value: 0, color: "--st-crit", pill: "st-crit", eq: "—" },
-    { name: "Undetected Fault", value: 1, color: "--st-undet", pill: "st-undet", eq: "Main Engine" },
+    { name: "Undetected Fault", value: 1, color: "--st-undet", pill: "st-undet", eq: "Auxiliary Boiler" },
     { name: "Unknown Fault", value: 0, color: "--st-unk", pill: "st-unk", eq: "—" },
     { name: "Good", value: 26, color: "--good", pill: "good", eq: "26 equipment" },
     { name: "Not Running", value: 16, color: "--st-off", pill: "st-off", eq: "16 equipment" }
@@ -761,7 +763,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   ).join("");
 
   document.querySelector(".js-al-rows").innerHTML = alarms.map(a =>
-    `<tr><td><span class="pill ${a.pill}">${a.name}</span></td><td>${a.eq}</td><td class="r num">${a.value}</td></tr>`
+    `<tr data-type="${a.name}"><td><span class="pill ${a.pill}">${a.name}</span></td><td>${a.eq}</td><td class="r num">${a.value}</td></tr>`
   ).join("");
 
   // ---------- Donuts ----------
@@ -782,7 +784,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   }
   function summary(tbody, segments, total, dp = 0) {
     tbody.innerHTML = segments.map(s =>
-      `<tr><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${pct(s.value, total, dp)}</td></tr>`
+      `<tr data-type="${s.name}"><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${pct(s.value, total, dp)}</td></tr>`
     ).join("");
   }
   const inAlarm = equipment.filter(e => e[2] > 0).length;
@@ -827,107 +829,128 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     });
   });
 
-  // ---------- Worst parameters ----------
-  function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-  function series(seed, base, noise, onset, shape) {
-    const r = rng(seed), pts = [];
-    for (let i = 0; i < 96; i++) {
-      let v = base + (r() - 0.5) * 2 * noise;
-      if (i >= onset) v += shape(i - onset, r);
-      pts.push(v);
+  // ---------- Equipment diagnosis ----------
+  // Supervised: similarity to learned fault scenarios. Unsupervised: distance from the normal-state cluster.
+  const diagnoses = {
+    "Undetected Fault": {
+      eq: "Auxiliary Boiler", system: "Engine room · Boiler", code: "AB-02",
+      summary: "Health is within the normal range, but the pattern resembles a learned fault scenario.",
+      scenario: "AB_AB2_Steam_pres_low", similarity: 92.0, simLimit: 80,
+      cause: "Blr_AuxBlr2_StmPrs", causeNote: "RCA rule cause parameter of the scenario",
+      health: 0.51, healthLimit: 1.0,
+      drift: ["DERIV_DrumLvl1_DrumLvl2_Max", "DERIV_GasTemp1_GasTemp2_Max", "DERIV_StmPrs1_StmPrs2_Max"]
     }
-    return pts;
-  }
-  const worst = [
-    {
-      eq: "Main Engine", pm: "Gas Pressure", unit: "bar", tag: "ME-01 / GAS_PRESS_IN",
-      desc: "Gas pressure has been falling steadily for the last 7 hours. This pattern differs from normal operation at the same engine load.",
-      score: 0.91, type: "Undetected Fault", since: "2026-10-27 03:10", now: "7.02 bar", range: "7.9 – 9.1 bar",
-      reco: "Check the gas supply line and the pressure regulating valve. Compare with the redundant pressure sensor.",
-      data: series(11, 8.5, 0.12, 68, (k) => -k * 0.055), lo: 7.9, hi: 9.1, onset: 68
-    },
-    {
-      eq: "Generator #1", pm: "Exhaust Temperature", unit: "°C", tag: "GE-01 / EXH_TEMP_CYL3",
-      desc: "Cylinder 3 exhaust temperature is rising while load is stable. The other cylinders remain within their normal range.",
-      score: 0.78, type: "Good", since: "2026-10-27 04:55", now: "427 °C", range: "365 – 405 °C",
-      reco: "Inspect the cylinder 3 fuel injector and the turbocharger air filter at the next opportunity.",
-      data: series(23, 385, 4, 75, (k) => k * 2.1), lo: 365, hi: 405, onset: 75
-    },
-    {
-      eq: "Boiler", pm: "Feed Water Flow", unit: "m³/h", tag: "BLR-01 / FW_FLOW",
-      desc: "Feed water flow is oscillating with a growing amplitude. No alarm has been raised yet; the anomaly model flagged it first.",
-      score: 0.64, type: "Good", since: "2026-10-27 01:30", now: "13.4 m³/h", range: "11.0 – 13.0 m³/h",
-      reco: "Check the feed water pump and the level control valve before arrival at Ras Tanura.",
-      data: series(37, 12, 0.18, 60, (k) => Math.sin(k / 1.6) * k * 0.045), lo: 11, hi: 13, onset: 60
-    }
-  ];
-
-  const tabs = document.querySelector(".js-tabs");
-  tabs.innerHTML = worst.map((w, i) =>
-    `<button class="tab" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="rank">#${i + 1}</span>${w.eq} – ${w.pm}</button>`
-  ).join("");
-  tabs.addEventListener("click", e => {
-    const b = e.target.closest(".tab"); if (!b) return;
-    tabs.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t === b)));
-    showWorst(+b.dataset.i);
+  };
+  const pickable = ["Critical", "Undetected Fault", "Unknown Fault"];
+  const alarmCard = document.querySelector('[data-card="alarm"]');
+  alarmCard.querySelectorAll("tr[data-type]").forEach(tr => {
+    if (!pickable.includes(tr.dataset.type)) return;
+    tr.classList.add("pick");
+    tr.tabIndex = 0;
+  });
+  alarmCard.querySelectorAll(".seg").forEach(seg => {
+    if (pickable.includes(seg.dataset.label)) seg.dataset.type = seg.dataset.label;
+  });
+  alarmCard.addEventListener("click", e => {
+    const el = e.target.closest("[data-type]");
+    if (el && pickable.includes(el.dataset.type)) showDiagnosis(el.dataset.type);
+  });
+  alarmCard.addEventListener("keydown", e => {
+    const el = e.target.closest("tr.pick");
+    if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showDiagnosis(el.dataset.type); }
   });
 
-  function showWorst(i) {
-    const w = worst[i];
-    document.querySelector(".js-headline").innerHTML =
-      `<span class="eq">${w.eq}</span> – <span class="pm">${w.pm}</span> requires attention.`;
-    document.querySelector(".js-desc").textContent = w.desc;
-    document.querySelector(".js-facts").innerHTML = `
-      <div><dt>Anomaly score</dt><dd class="num">${w.score.toFixed(2)}</dd></div>
-      <div><dt>Alarm type</dt><dd><span class="pill ${alarmTypes[w.type]}">${w.type}</span></dd></div>
-      <div><dt>Current value</dt><dd class="num">${w.now}</dd></div>
-      <div><dt>Normal range</dt><dd class="num">${w.range}</dd></div>
-      <div><dt>First detected</dt><dd class="num">${w.since}</dd></div>`;
-    document.querySelector(".js-reco").textContent = w.reco;
-    document.querySelector(".js-tag").textContent = w.tag;
-    drawTrace(w);
+  function showDiagnosis(type) {
+    const a = alarms.find(x => x.name === type);
+    const pill = document.querySelector(".js-diag-pill");
+    pill.className = "pill js-diag-pill " + a.pill;
+    pill.textContent = type;
+    alarmCard.querySelectorAll("tr.pick").forEach(tr => tr.classList.toggle("on", tr.dataset.type === type));
+    const d = diagnoses[type];
+    const body = document.querySelector(".js-diag-body"), empty = document.querySelector(".js-diag-empty");
+    body.hidden = !d;
+    empty.hidden = !!d;
+    if (!d) {
+      empty.innerHTML = `<div><b>No equipment in this status</b><br>${type} · 0 of ${alTotal} equipment</div>`;
+      return;
+    }
+    document.querySelector(".js-diag-info").innerHTML = `
+      <div class="diag-alert">${d.summary}</div>
+      <p class="headline">${d.eq} shows a <em>fault sign</em>.</p>
+      <p class="eq-sub">${d.system} · ${d.code}</p>
+      <div class="model">
+        <div class="model-head">Most similar fault scenario<span class="k sup">SUPERVISED</span></div>
+        <div class="model-row"><span>Scenario</span><b class="mono">${d.scenario}</b></div>
+        <div class="model-row"><span>Similarity</span><div class="meter"><b class="num">${d.similarity.toFixed(1)}%</b>
+          <span class="track2"><i style="width:${d.similarity}%;background:var(--st-undet)"></i><u style="left:${d.simLimit}%"></u></span><small>threshold ${d.simLimit}%</small></div></div>
+        <div class="model-row"><span>Root-cause candidate<small class="ord">Check 1st</small></span><span><b class="mono">${d.cause}</b><br><small style="color:var(--muted)">${d.causeNote}</small></span></div>
+      </div>
+      <div class="model">
+        <div class="model-head">Deviation from the normal state<span class="k uns">UNSUPERVISED</span></div>
+        <div class="model-row"><span>Health</span><div class="meter"><b class="num">${d.health.toFixed(2)}</b>
+          <span class="track2"><i style="width:${d.health / 1.5 * 100}%;background:var(--good)"></i><u style="left:${d.healthLimit / 1.5 * 100}%"></u></span><small>abnormal above ${d.healthLimit.toFixed(2)}</small></div></div>
+        <div class="model-row"><span>Drifting parameters<small class="ord">Check 2nd</small></span><ul class="param-list">${d.drift.map(p => `<li>${p}</li>`).join("")}</ul></div>
+      </div>`;
+    document.querySelector(".js-ship-caption").textContent = `${d.eq} · ${d.system}`;
+    drawShip(d);
   }
 
-  function drawTrace(w) {
-    const W = 620, H = 250, L = 48, R = 12, T = 22, B = 30;
-    const vals = w.data, n = vals.length;
-    const minV = Math.min(...vals, w.lo), maxV = Math.max(...vals, w.hi);
-    const pad = (maxV - minV) * 0.12;
-    const y0 = minV - pad, y1 = maxV + pad;
-    const x = i => L + i / (n - 1) * (W - L - R);
-    const y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
-    let out = "";
-    // grid + y labels
-    for (let k = 0; k <= 4; k++) {
-      const v = y0 + (y1 - y0) * k / 4, yy = y(v);
-      out += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/>`;
-      out += `<text x="${L - 6}" y="${yy + 3}" text-anchor="end">${v.toFixed(v >= 100 ? 0 : 1)}</text>`;
-    }
-    // x labels: every 6 h over 24 h ending 10:25
-    const hours = ["10:25\nOct 26", "16:25", "22:25", "04:25", "10:25"];
-    hours.forEach((h, k) => {
-      const xx = x((n - 1) * k / 4);
-      out += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--line)" stroke-dasharray="2 3"/>`;
-      out += `<text x="${xx}" y="${H - B + 16}" text-anchor="${k === 0 ? "start" : k === 4 ? "end" : "middle"}">${h.split("\n")[0]}</text>`;
+  // Monochrome LNG carrier side view; only the equipment marker is coloured
+  function drawShip(d) {
+    const ink = "currentColor", fill = "var(--surface)";
+    let o = "";
+    // sea
+    o += `<line x1="0" y1="226" x2="640" y2="226" stroke="${ink}" stroke-opacity=".35" stroke-dasharray="6 5"/>`;
+    // hull (stern left, bow right)
+    o += `<path d="M28 168 L36 236 Q40 250 58 250 L566 250 Q596 250 604 236 Q622 230 622 214 Q614 196 618 168 Z" fill="${fill}" stroke="${ink}" stroke-width="1.5"/>`;
+    // trunk deck + cargo domes
+    o += `<path d="M176 168 V150 H590 V168" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    [0, 1, 2, 3].forEach(k => {
+      const x0 = 186 + k * 102;
+      o += `<rect x="${x0}" y="176" width="94" height="66" rx="4" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-dasharray="4 3"/>`;
+      o += `<text x="${x0 + 47}" y="213" text-anchor="middle">Cargo tank ${4 - k}</text>`;
+      o += `<rect x="${x0 + 38}" y="142" width="18" height="8" rx="2" fill="${fill}" stroke="${ink}"/>`;
     });
-    // normal band
-    out += `<rect x="${L}" y="${y(w.hi)}" width="${W - L - R}" height="${y(w.lo) - y(w.hi)}" fill="var(--band)"/>`;
-    out += `<line x1="${L}" x2="${W - R}" y1="${y(w.hi)}" y2="${y(w.hi)}" stroke="var(--good)" stroke-dasharray="4 3"/>`;
-    out += `<line x1="${L}" x2="${W - R}" y1="${y(w.lo)}" y2="${y(w.lo)}" stroke="var(--good)" stroke-dasharray="4 3"/>`;
-    // detection marker
-    const xo = x(w.onset);
-    out += `<rect x="${xo}" y="${T}" width="${W - R - xo}" height="${H - T - B}" fill="var(--crit)" opacity="0.06"/>`;
-    out += `<line x1="${xo}" x2="${xo}" y1="${T}" y2="${H - B}" stroke="var(--crit)" stroke-width="1"/>`;
-    out += `<text x="${xo + 4}" y="${T + 10}" text-anchor="start" style="fill:var(--crit)">Anomaly detected</text>`;
-    // lines
-    const path = (from, to) => vals.slice(from, to).map((v, j) => `${j ? "L" : "M"}${x(from + j).toFixed(1)},${y(v).toFixed(1)}`).join("");
-    out += `<path d="${path(0, w.onset + 1)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
-    out += `<path d="${path(w.onset, n)}" fill="none" stroke="var(--crit)" stroke-width="2"/>`;
-    out += `<circle cx="${x(n - 1)}" cy="${y(vals[n - 1])}" r="4" fill="var(--crit)" stroke="var(--surface)" stroke-width="2"/>`;
-    out += `<text x="${L - 6}" y="10" text-anchor="end">${w.unit}</text>`;
-    document.querySelector(".js-trace").innerHTML = out;
+    // accommodation, bridge and funnel
+    o += `<path d="M44 168 V116 H60 V84 H40 V74 H62" fill="none" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<rect x="60" y="92" width="92" height="76" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<rect x="54" y="82" width="104" height="10" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++)
+      o += `<rect x="${68 + c * 13}" y="${100 + r * 16}" width="7" height="5" fill="${ink}" fill-opacity=".45"/>`;
+    o += `<path d="M30 168 V108 L36 92 H52 V168" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<line x1="104" y1="82" x2="104" y2="62" stroke="${ink}"/><line x1="96" y1="68" x2="112" y2="68" stroke="${ink}"/>`;
+    // engine room
+    o += `<rect x="42" y="176" width="130" height="66" rx="4" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-dasharray="4 3"/>`;
+    o += `<text x="60" y="236">Engine room</text>`;
+    // equipment marker (auxiliary boiler, upper engine room)
+    const mx = 128, my = 196;
+    o += `<circle class="ping" cx="${mx}" cy="${my}" r="9" fill="var(--st-undet)"/>`;
+    o += `<circle cx="${mx}" cy="${my}" r="5" fill="var(--st-undet)" stroke="var(--surface)" stroke-width="2"/>`;
+    // callout with a zoomed boiler drawing
+    const bx = 330, by = 8, bw = 300, bh = 120;
+    o += `<path d="M${mx} ${my - 6} L${mx + 60} 120 L${bx} 120" fill="none" stroke="var(--st-undet)" stroke-width="1.2"/>`;
+    o += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="8" fill="${fill}" stroke="var(--st-undet)" stroke-width="1.2"/>`;
+    // boiler: steam drum, furnace shell, burner, stack, gauge
+    const gx = bx + 22;
+    o += `<rect x="${gx + 18}" y="${by + 30}" width="44" height="76" rx="10" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
+    o += `<rect x="${gx + 10}" y="${by + 22}" width="60" height="16" rx="8" fill="${fill}" stroke="${ink}" stroke-width="1.4"/>`;
+    o += `<path d="M${gx + 34} ${by + 22} V${by + 10} H${gx + 46} V${by + 22}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
+    o += `<path d="M${gx + 4} ${by + 92} H${gx + 18} M${gx + 4} ${by + 86} V${by + 98}" stroke="${ink}" stroke-width="1.4"/>`;
+    o += `<path d="M${gx + 30} ${by + 92} q6 -14 10 -2 q4 -14 10 2" fill="none" stroke="${ink}" stroke-opacity=".6"/>`;
+    o += `<line x1="${gx + 70}" y1="${by + 30}" x2="${gx + 86}" y2="${by + 30}" stroke="${ink}" stroke-width="1.4"/>`;
+    o += `<circle cx="${gx + 92}" cy="${by + 30}" r="6" fill="${fill}" stroke="var(--st-undet)" stroke-width="2"/>`;
+    o += `<line x1="${gx + 92}" y1="${by + 30}" x2="${gx + 95}" y2="${by + 26}" stroke="var(--st-undet)" stroke-width="1.5"/>`;
+    // labels
+    const tx = bx + 140;
+    o += `<text x="${tx}" y="${by + 26}" style="fill:var(--fg);font-size:13px;font-weight:600">${d.eq}</text>`;
+    o += `<text x="${tx}" y="${by + 42}">${d.code} · ${d.system}</text>`;
+    o += `<text x="${tx}" y="${by + 66}">Pressure sensor</text>`;
+    o += `<text x="${tx}" y="${by + 80}" style="fill:var(--st-undet);font-family:var(--font-mono)">${d.cause}</text>`;
+    o += `<text x="${tx}" y="${by + 104}">Health ${d.health.toFixed(2)} · Similarity ${d.similarity.toFixed(1)}%</text>`;
+    o += `<text x="20" y="274">AFT</text><text x="620" y="274" text-anchor="end">FWD</text>`;
+    document.querySelector(".js-ship-map").innerHTML = o;
   }
-  showWorst(0);
+  showDiagnosis("Undetected Fault");
 
   // ---------- Voyage track ----------
   const track = document.querySelector(".js-track");
