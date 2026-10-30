@@ -27,6 +27,8 @@
   --health: #F2B300;
   --health-rest: #34424F;
   --band: rgba(30, 154, 96, 0.10);
+  --bar-bg: #2F5BD8;
+  --bar-pill: #2449B8;
   --font-sans: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   color-scheme: light;
@@ -38,6 +40,7 @@
     --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
     --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
     --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+    --bar-bg: #1F3E99; --bar-pill: #17307A;
     color-scheme: dark;
   }
 }
@@ -47,6 +50,7 @@
   --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
   --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
   --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+    --bar-bg: #1F3E99; --bar-pill: #17307A;
   color-scheme: dark;
 }
 
@@ -65,11 +69,36 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .num { font-variant-numeric: tabular-nums; }
 .mono { font-family: var(--font-mono); }
 
+.page { display: flex; flex-direction: column; min-height: 100vh; }
 .app {
+  flex: 1;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 340px;
-  min-height: 100vh;
 }
+
+/* ---------- App bar + page tabs ---------- */
+.appbar { background: var(--bar-bg); color: #fff; }
+.appbar-row {
+  display: flex; align-items: center; gap: 14px; height: 52px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.appbar .brand { display: flex; align-items: center; gap: 10px; color: #fff; }
+.appbar .brand b { font-size: 15px; letter-spacing: 0.01em; white-space: nowrap; }
+.app-name {
+  padding: 6px 16px; border-radius: 6px; background: var(--bar-pill);
+  font-weight: 600; white-space: nowrap;
+}
+.appbar .bell { margin-left: auto; }
+.page-tabs {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding: 6px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+}
+.page-tab {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px;
+  border: 0; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.14);
+  color: #fff; white-space: nowrap; cursor: pointer;
+}
+.page-tab[aria-selected="true"] { background: var(--bg); color: var(--fg); font-weight: 600; }
 
 /* ---------- Sidebar ---------- */
 .sidebar {
@@ -110,24 +139,94 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   padding-right: max(16px, 24px);
   display: flex; flex-direction: column; gap: 18px; min-width: 0;
 }
-.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.crumb { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.crumb { font-size: 13px; color: var(--muted); }
+.crumb b { color: var(--fg); font-weight: 600; }
 h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
-.updated { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-.theme-btn {
-  display: grid; place-items: center; width: 26px; height: 26px; padding: 0;
+/* Toolbar: [Real-time switch | Today range | more] [refresh] [theme] */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.period {
+  display: flex; align-items: center; gap: 12px; height: 32px; padding: 0 4px 0 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface); min-width: 0;
+}
+.rt { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.rt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rt i {
+  position: relative; width: 28px; height: 16px; border-radius: 999px; flex: none;
+  background: var(--line); transition: background 0.15s ease;
+}
+.rt i::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.25); transition: transform 0.15s ease;
+}
+.rt input:checked + i { background: var(--good); }
+.rt input:checked + i::after { transform: translateX(12px); }
+.rt input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.range { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; color: var(--fg); }
+.range b { font-weight: 500; color: var(--muted); }
+.icon-btn {
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0; flex: none;
   border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
   color: var(--muted); cursor: pointer;
 }
-.theme-btn:hover { color: var(--fg); }
+.icon-btn:hover { color: var(--fg); }
+.period .icon-btn { width: 26px; height: 26px; border: 0; background: transparent; }
+.icon-btn.spin svg { animation: spin 0.6s linear; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .theme-btn .i-sun { display: none; }
 .theme-btn.is-dark .i-sun { display: block; }
 .theme-btn.is-dark .i-moon { display: none; }
-.live { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px;
-  background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; }
-.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good);
-  animation: pulse 1.6s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: 0.3; } }
+
+/* ---------- Menu drawer ---------- */
+.menu-btn {
+  display: grid; place-items: center; width: 30px; height: 30px; padding: 0; flex: none;
+  border: 0; border-radius: 6px; background: transparent; color: #fff; cursor: pointer;
+}
+.menu-btn:hover { background: rgba(255,255,255,0.14); }
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 40; background: rgba(8, 18, 26, 0.45);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+.drawer {
+  position: fixed; inset: 0 auto 0 0; z-index: 41; width: min(300px, 86vw);
+  display: flex; flex-direction: column;
+  background: var(--surface); color: var(--fg); border-right: 1px solid var(--line);
+  box-shadow: 8px 0 24px rgba(0,0,0,0.18);
+  transform: translateX(-102%); transition: transform 0.22s ease;
+}
+body.drawer-open .drawer { transform: none; }
+body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
+.drawer-head {
+  display: flex; align-items: center; gap: 10px; padding: 16px 14px 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.avatar {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; flex: none;
+  background: var(--accent-soft); color: var(--accent);
+}
+.drawer-head b { font-size: 15px; font-weight: 600; }
+.drawer-head .icon-btn { margin-left: auto; width: 28px; height: 28px; border: 0; background: transparent; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 10px 10px 16px; }
+.d-group + .d-group { margin-top: 4px; }
+.d-group-btn {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  padding: 10px 10px; border: 0; border-radius: 6px; background: transparent;
+  font-weight: 600; text-align: left; cursor: pointer;
+}
+.d-group-btn:hover { background: var(--surface-2); }
+.d-group-btn[aria-expanded="true"] { background: var(--surface-2); }
+.d-group-btn svg { color: var(--muted); transition: transform 0.15s ease; }
+.d-group-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.d-list { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 6px; }
+.d-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px 9px 18px;
+  border-radius: 6px; color: var(--fg); text-decoration: none;
+}
+.d-item svg { flex: none; color: var(--muted); }
+.d-item:hover { background: var(--surface-2); }
+.d-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.d-item.active svg { color: var(--accent); }
+.drawer-foot { padding: 10px 20px 14px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); }
 
 .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .card {
@@ -313,29 +412,94 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 @media (max-width: 760px) {
   .app { grid-template-columns: minmax(0, 1fr); }
   .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  .nav-group.views { display: none; }
   .nav-group.vessels { flex-direction: row; overflow-x: auto; width: 100%; }
   .nav-group.vessels .nav-label { display: none; }
   .nav-item { width: auto; flex: none; }
+  .period { flex-wrap: wrap; height: auto; padding-block: 4px; row-gap: 4px; }
+  .range { white-space: normal; flex-wrap: wrap; }
+  .appbar .brand b { display: none; }
   .main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .side { grid-column: 1; grid-template-columns: minmax(0, 1fr); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .live::before { animation: none; }
+  .drawer, .drawer-backdrop, .rt i, .rt i::after { transition: none; }
+  .icon-btn.spin svg { animation: none; }
   .track .ship { transition: none; }
 }
 </style>
 </head>
 <body>
+<!-- ===== Menu drawer (opened from the ☰ button) ===== -->
+<div class="drawer-backdrop js-drawer-close"></div>
+<aside class="drawer" id="drawer" aria-label="Main menu" inert>
+  <div class="drawer-head">
+    <span class="avatar"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5.5" r="3"/><path d="M2.5 14.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5"/></svg></span>
+    <b>Administrator</b>
+    <button class="icon-btn js-drawer-close" type="button" title="Close menu" aria-label="Close menu">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+    </button>
+  </div>
+  <nav class="drawer-body">
+    <div class="d-group">
+      <button class="d-group-btn" type="button" aria-expanded="true">Dashboard<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l4 4 4-4"/></svg></button>
+      <div class="d-list">
+        <a class="d-item active" href="#" aria-current="page"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Diagnosis Overview</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>Alarm Management</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 12 5 7l3 3 3-6 3.5 5"/></svg>Anomaly Detection</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l2.5 2"/></svg>Maintenance (RUL)</a>
+      </div>
+    </div>
+    <div class="d-group">
+      <button class="d-group-btn" type="button" aria-expanded="true">Equipment<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l4 4 4-4"/></svg></button>
+      <div class="d-list">
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12"/></svg>Equipment List</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11V7a4 4 0 0 1 8 0v4l1.5 1.5h-11z"/><path d="M6.5 14h3"/></svg>Alarm List</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11.5" rx="1"/><path d="M5 1v3M11 1v3M2 6.5h12"/></svg>Maintenance History</a>
+      </div>
+    </div>
+    <div class="d-group">
+      <button class="d-group-btn" type="button" aria-expanded="false">Reports<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l4 4 4-4"/></svg></button>
+      <div class="d-list" hidden>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M6 8h4M6 11h4"/></svg>Daily Report</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M6 8h4M6 11h4"/></svg>Monthly Report</a>
+      </div>
+    </div>
+    <div class="d-group">
+      <button class="d-group-btn" type="button" aria-expanded="false">Equipment Management<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l4 4 4-4"/></svg></button>
+      <div class="d-list" hidden>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/></svg>Equipment Settings</a>
+        <a class="d-item" href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 13.5 5.5 8l3 3L14 3"/></svg>Threshold Settings</a>
+      </div>
+    </div>
+  </nav>
+  <div class="drawer-foot">Version 2.1.0</div>
+</aside>
+
+<div class="page">
+<header class="appbar">
+  <div class="appbar-row">
+    <button class="menu-btn js-menu-open" type="button" aria-label="Open menu" aria-controls="drawer" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h13"/></svg>
+    </button>
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="6" fill="#fff" fill-opacity=".18"/><path d="M5 17h18l-3 5H8z" fill="#fff"/><path d="M10 11h7v5h-7z" fill="#fff" opacity=".8"/><path d="M13 7h3v4h-3z" fill="#fff" opacity=".6"/></svg>
+      <b>Vessel Health</b>
+    </div>
+    <span class="app-name">Dashboard</span>
+    <button class="menu-btn bell" type="button" aria-label="Notifications" title="Notifications">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11V7a4 4 0 0 1 8 0v4l1.5 1.5h-11z"/><path d="M6.5 14h3"/></svg>
+    </button>
+  </div>
+  <div class="page-tabs" role="tablist" aria-label="Open pages">
+    <button class="page-tab" role="tab" aria-selected="true" type="button">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Diagnosis Overview
+    </button>
+  </div>
+</header>
 <div class="app">
 
   <!-- ===== Left: menu bar ===== -->
   <aside class="sidebar">
-    <div class="brand">
-      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="6" fill="#1B5E8C"/><path d="M5 17h18l-3 5H8z" fill="#fff"/><path d="M10 11h7v5h-7z" fill="#fff" opacity=".8"/><path d="M13 7h3v4h-3z" fill="#fff" opacity=".6"/></svg>
-      <div><b>Vessel Health</b><span>Condition Monitoring</span></div>
-    </div>
-
     <nav class="nav-group vessels" aria-label="Vessels">
       <div class="nav-label">Fleet</div>
       <button class="nav-item active" data-vessel="MARIN"><span>Vessel 1<small>MARIN</small></span><span class="dot warn" title="Caution"></span></button>
@@ -343,25 +507,26 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       <button class="nav-item" data-vessel="HALCYON"><span>Vessel 3<small>HALCYON</small></span><span class="dot good" title="Good"></span></button>
       <button class="nav-item" data-vessel="NORDSTAR"><span>Vessel 4<small>NORDSTAR</small></span><span class="dot crit" title="Critical"></span></button>
     </nav>
-
-    <nav class="nav-group views" aria-label="Views">
-      <div class="nav-label">Menu</div>
-      <button class="nav-item active"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Diagnosis Overview</button>
-      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>Alarm Management</button>
-      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 12 5 7l3 3 3-6 3.5 5"/></svg>Anomaly Detection</button>
-      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l2.5 2"/></svg>Maintenance (RUL)</button>
-    </nav>
   </aside>
 
   <!-- ===== Center: diagnosis board ===== -->
   <main class="main">
     <header class="page-head">
       <div>
-        <div class="crumb">Fleet / Vessel 1 · <span class="js-vessel">MARIN</span></div>
-        <h1>Diagnosis Overview</h1>
+        <div class="crumb">Fleet / <b>Vessel 1 · <span class="js-vessel">MARIN</span></b></div>
       </div>
-      <div class="updated"><span class="live">LIVE</span>Last updated <span class="num mono js-clock">2026-10-27 10:25:24</span>
-        <button class="theme-btn js-theme" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
+      <div class="toolbar">
+        <div class="period">
+          <label class="rt"><span>Real-time</span><input type="checkbox" role="switch" class="js-realtime"><i aria-hidden="true"></i></label>
+          <span class="range"><b>Today</b><span class="num mono js-range">2026-10-27 00:00~2026-10-27 10:25</span></span>
+          <button class="icon-btn" type="button" title="More options" aria-label="More options">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg>
+          </button>
+        </div>
+        <button class="icon-btn js-refresh" type="button" title="Refresh" aria-label="Refresh">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.6 3.8"/><path d="M12 1.5v2.8H9.2"/></svg>
+        </button>
+        <button class="icon-btn theme-btn js-theme" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
           <svg class="i-moon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>
           <svg class="i-sun" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1 1M12 12l1 1M3 13l1-1M12 4l1-1"/></svg>
         </button>
@@ -543,6 +708,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       </div>
     </section>
   </aside>
+</div>
 </div>
 
 <script>
@@ -796,14 +962,53 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     syncThemeBtn();
   });
 
-  // ---------- Live clock (starts from sample time) ----------
+  // ---------- Menu drawer ----------
+  const drawer = document.getElementById("drawer");
+  const menuBtn = document.querySelector(".js-menu-open");
+  function setDrawer(open) {
+    document.body.classList.toggle("drawer-open", open);
+    drawer.inert = !open;
+    menuBtn.setAttribute("aria-expanded", String(open));
+    (open ? drawer.querySelector(".js-drawer-close") : menuBtn).focus();
+  }
+  menuBtn.addEventListener("click", () => setDrawer(true));
+  document.querySelectorAll(".js-drawer-close").forEach(el => el.addEventListener("click", () => setDrawer(false)));
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.body.classList.contains("drawer-open")) setDrawer(false);
+  });
+  drawer.querySelectorAll(".d-group-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", String(open));
+      btn.nextElementSibling.hidden = !open;
+    });
+  });
+  drawer.querySelectorAll(".d-item").forEach(a => a.addEventListener("click", e => e.preventDefault()));
+
+  // ---------- Clock, real-time switch and refresh (starts from sample time) ----------
   let t = new Date(2026, 9, 27, 10, 25, 24).getTime();
-  const fmt = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") +
-    " " + [d.getHours(), d.getMinutes(), d.getSeconds()].map(v => String(v).padStart(2, "0")).join(":");
+  const pad = v => String(v).padStart(2, "0");
+  const day = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const fmt = d => day(d) + " " + [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad).join(":");
+  const rangeEl = document.querySelector(".js-range");
+  const realtime = document.querySelector(".js-realtime");
+  const refreshBtn = document.querySelector(".js-refresh");
+  function updateRange() {
+    const d = new Date(t);
+    rangeEl.textContent = day(d) + " 00:00~" + day(d) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
   setInterval(() => {
     t += 1000;
     document.querySelectorAll(".js-clock").forEach(el => el.textContent = fmt(new Date(t)));
+    if (realtime.checked) updateRange();
   }, 1000);
+  realtime.addEventListener("change", updateRange);
+  refreshBtn.addEventListener("click", () => {
+    updateRange();
+    refreshBtn.classList.remove("spin");
+    void refreshBtn.offsetWidth;
+    refreshBtn.classList.add("spin");
+  });
 })();
 </script>
 </body>
