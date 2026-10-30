@@ -616,7 +616,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
         </div>
         <div class="card-body">
           <div class="view-chart">
-            <svg class="donut js-donut-al" viewBox="0 0 120 120" role="img" aria-label="43 equipment by alarm type"></svg>
+            <svg class="donut js-donut-al" viewBox="0 0 120 120" role="img" aria-label="27 running equipment by alarm type; 16 not running"></svg>
             <table class="sum"><thead><tr><th>Type</th><th>Count</th><th>Rate</th></tr></thead><tbody class="js-al-sum"></tbody></table>
           </div>
           <div class="view-table" hidden>
@@ -766,11 +766,12 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 
   // ---------- Donuts ----------
   const pct = (v, total, dp) => (v / total * 100).toFixed(dp) + "%";
-  function donut(svg, segments, total, label, dp = 0) {
+  // pctBase lets the tooltip show the same rate as the summary table when the ring covers a subset
+  function donut(svg, segments, total, label, dp = 0, pctBase = total) {
     let offset = 0, out = `<circle cx="60" cy="60" r="44" fill="none" stroke="var(--surface-2)" stroke-width="16"/>`;
     segments.filter(s => s.value > 0).forEach(s => {
       const len = s.value / total * 100;
-      out += `<circle class="seg" data-label="${s.name}" data-value="${s.value} (${pct(s.value, total, dp)})" data-color="${s.color}"
+      out += `<circle class="seg" data-label="${s.name}" data-value="${s.value} (${pct(s.value, pctBase, dp)})" data-color="${s.color}"
         cx="60" cy="60" r="44" fill="none" stroke="var(${s.color})" stroke-width="16" pathLength="100"
         stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;
       offset += len;
@@ -793,7 +794,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   summary(document.querySelector(".js-eq-sum"), eqSeg, equipment.length);
 
   const alTotal = alarms.reduce((s, a) => s + a.value, 0);
-  donut(document.querySelector(".js-donut-al"), alarms, alTotal, "Total", 1);
+  // Ring shows running equipment only; Not Running stays in the summary table
+  const running = alarms.filter(a => a.name !== "Not Running");
+  donut(document.querySelector(".js-donut-al"), running, running.reduce((s, a) => s + a.value, 0), "Running", 1, alTotal);
   summary(document.querySelector(".js-al-sum"), alarms, alTotal, 1);
 
   // ---------- Chart tooltips ----------
