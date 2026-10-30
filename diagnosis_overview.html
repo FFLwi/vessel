@@ -76,7 +76,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .app {
   flex: 1;
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 340px;
+  grid-template-columns: 240px minmax(0, 1fr) 340px;
 }
 
 /* ---------- App bar + page tabs ---------- */
@@ -101,39 +101,60 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   border: 0; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.14);
   color: #fff; white-space: nowrap; cursor: pointer;
 }
-.page-tab[aria-selected="true"] { background: var(--bg); color: var(--fg); font-weight: 600; }
+.page-tab[aria-selected="true"] { background: var(--surface); color: var(--fg); font-weight: 600; }
 
-/* ---------- Sidebar ---------- */
+/* ---------- Filter bar: vessel selection + period ---------- */
+.filterbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.filterbar .lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 4px; }
+.vchips { display: flex; gap: 6px; overflow-x: auto; }
+.vchip {
+  padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+  font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.vchip small { margin-left: 4px; font-size: 11px; color: var(--muted); }
+.vchip:hover { border-color: var(--accent); }
+.vchip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.vchip.active small { color: var(--accent); }
+.eq-total { font-size: 12px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+.filterbar .toolbar { margin-left: auto; }
+
+/* ---------- Sidebar: equipment by alarm type ---------- */
 .sidebar {
   background: var(--nav-bg);
   color: var(--nav-fg);
-  padding: 20px 14px;
+  padding: 18px 12px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 10px;
+  min-width: 0;
 }
-.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; color: #fff; }
-.brand svg { flex: none; }
-.brand b { display: block; font-size: 15px; letter-spacing: 0.01em; }
-.brand span { display: block; font-size: 11px; color: var(--nav-fg); }
-.nav-group { display: flex; flex-direction: column; gap: 4px; }
-.nav-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  padding: 0 8px 6px; opacity: 0.7;
+.eq-title { display: flex; align-items: baseline; gap: 8px; padding: 0 6px 4px; color: #fff; font-weight: 600; font-size: 15px; }
+.eq-title small { font-size: 12px; font-weight: 400; color: var(--nav-fg); }
+.eq-nav { display: flex; flex-direction: column; gap: 4px; }
+.eq-group-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 8px;
+  border: 0; border-radius: 6px; background: transparent; color: #fff; font-weight: 600; text-align: left; cursor: pointer;
 }
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  width: 100%; padding: 9px 10px; border: 0; border-radius: 6px;
-  background: transparent; text-align: left; cursor: pointer; color: var(--nav-fg);
+.eq-group-btn:hover { background: rgba(255,255,255,0.06); }
+.eq-group-btn .n { margin-left: auto; font-weight: 500; color: var(--nav-fg); font-variant-numeric: tabular-nums; }
+.eq-group-btn .chev { flex: none; opacity: 0.7; transition: transform 0.15s ease; }
+.eq-group-btn[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+.eq-items { list-style: none; margin: 0 0 4px; padding: 0 0 0 10px; display: flex; flex-direction: column; gap: 2px; }
+.eq-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px;
+  border: 1px solid transparent; border-radius: 6px; background: transparent;
+  color: var(--nav-fg); font-size: 13px; text-align: left;
 }
-.nav-item:hover { background: rgba(255,255,255,0.06); }
-.nav-item.active { background: var(--nav-active); color: #fff; }
-.nav-item small { display: block; font-size: 11px; opacity: 0.75; }
-.nav-item .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-left: auto; }
-.dot.good { background: var(--good); }
-.dot.warn { background: var(--warn); }
-.dot.crit { background: var(--crit); }
-.nav-item svg { flex: none; opacity: 0.85; }
+button.eq-item { cursor: pointer; }
+button.eq-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.eq-item.active { background: var(--nav-active); border-color: rgba(255,255,255,0.18); color: #fff; font-weight: 600; }
+.eq-item span { min-width: 0; }
+.eq-item.plain { opacity: 0.75; }
+.st-ico { flex: none; }
 
 /* ---------- Main ---------- */
 .main {
@@ -142,9 +163,6 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   padding-right: max(16px, 24px);
   display: flex; flex-direction: column; gap: 18px; min-width: 0;
 }
-.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.crumb { font-size: 13px; color: var(--muted); }
-.crumb b { color: var(--fg); font-weight: 600; }
 h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
 /* Toolbar: [Real-time switch | Today range | more] [refresh] [theme] */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
@@ -298,7 +316,7 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .gauge-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
 .donut { width: 128px; height: 128px; flex: none; }
 @media (max-width: 1500px) {
-  .app { grid-template-columns: 220px minmax(0, 1fr) 320px; }
+  .app { grid-template-columns: 230px minmax(0, 1fr) 320px; }
   .card { padding-inline: 14px; }
   .card-head { gap: 6px; }
   .donut { width: 104px; height: 104px; }
@@ -327,6 +345,15 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .worst { gap: 14px; }
 .worst .card-head { flex-wrap: wrap; }
 .worst .card-head .pill { white-space: nowrap; }
+.diag-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.diag-tab {
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2);
+  font-size: 13px; text-align: left; cursor: pointer;
+}
+.diag-tab:hover { border-color: var(--muted); }
+.diag-tab[aria-selected="true"] { background: var(--surface); border-color: var(--tab-c, var(--accent)); box-shadow: inset 0 -2px 0 var(--tab-c, var(--accent)); font-weight: 600; }
+.diag-tab .rank { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 .worst-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; }
 .insight { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .diag-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
@@ -433,7 +460,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
-  .app { grid-template-columns: 200px minmax(0, 1fr); }
+  .app { grid-template-columns: 230px minmax(0, 1fr); }
   .side { grid-column: 2; border-left: 0; border-top: 1px solid var(--line);
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 }
@@ -443,10 +470,8 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 }
 @media (max-width: 760px) {
   .app { grid-template-columns: minmax(0, 1fr); }
-  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  .nav-group.vessels { flex-direction: row; overflow-x: auto; width: 100%; }
-  .nav-group.vessels .nav-label { display: none; }
-  .nav-item { width: auto; flex: none; }
+  .sidebar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .filterbar .toolbar { margin-left: 0; }
   .period { flex-wrap: wrap; height: auto; padding-block: 4px; row-gap: 4px; }
   .range { white-space: normal; flex-wrap: wrap; }
   .appbar .brand b { display: none; }
@@ -457,7 +482,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   .drawer, .drawer-backdrop, .rt i, .rt i::after { transition: none; }
   .icon-btn.spin svg { animation: none; }
   .ship-view .ping { animation: none; opacity: 0.4; }
-  .rul-btn .chev { transition: none; }
+  .rul-btn .chev, .eq-group-btn .chev { transition: none; }
   .track .ship { transition: none; }
 }
 </style>
@@ -530,43 +555,42 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     </button>
   </div>
 </header>
+<div class="filterbar">
+  <span class="lbl">Vessel</span>
+  <div class="vchips" role="group" aria-label="Vessel">
+    <button class="vchip active" type="button" data-vessel="MARIN" aria-pressed="true">Vessel 1<small>MARIN</small></button>
+    <button class="vchip" type="button" data-vessel="AURORA" aria-pressed="false">Vessel 2<small>AURORA</small></button>
+    <button class="vchip" type="button" data-vessel="HALCYON" aria-pressed="false">Vessel 3<small>HALCYON</small></button>
+    <button class="vchip" type="button" data-vessel="NORDSTAR" aria-pressed="false">Vessel 4<small>NORDSTAR</small></button>
+  </div>
+  <span class="eq-total">43 equipment</span>
+<div class="toolbar">
+    <div class="period">
+      <label class="rt"><span>Real-time</span><input type="checkbox" role="switch" class="js-realtime"><i aria-hidden="true"></i></label>
+      <span class="range"><b>Today</b><span class="num mono js-range">2026-10-27 00:00~2026-10-27 10:25</span></span>
+      <button class="icon-btn" type="button" title="More options" aria-label="More options">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg>
+      </button>
+    </div>
+    <button class="icon-btn js-refresh" type="button" title="Refresh" aria-label="Refresh">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.6 3.8"/><path d="M12 1.5v2.8H9.2"/></svg>
+    </button>
+    <button class="icon-btn theme-btn js-theme" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
+      <svg class="i-moon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>
+      <svg class="i-sun" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1 1M12 12l1 1M3 13l1-1M12 4l1-1"/></svg>
+    </button>
+  </div>
+</div>
 <div class="app">
 
-  <!-- ===== Left: menu bar ===== -->
+  <!-- ===== Left: equipment by alarm type ===== -->
   <aside class="sidebar">
-    <nav class="nav-group vessels" aria-label="Vessels">
-      <div class="nav-label">Fleet</div>
-      <button class="nav-item active" data-vessel="MARIN"><span>Vessel 1<small>MARIN</small></span><span class="dot warn" title="Caution"></span></button>
-      <button class="nav-item" data-vessel="AURORA"><span>Vessel 2<small>AURORA</small></span><span class="dot good" title="Good"></span></button>
-      <button class="nav-item" data-vessel="HALCYON"><span>Vessel 3<small>HALCYON</small></span><span class="dot good" title="Good"></span></button>
-      <button class="nav-item" data-vessel="NORDSTAR"><span>Vessel 4<small>NORDSTAR</small></span><span class="dot crit" title="Critical"></span></button>
-    </nav>
+    <div class="eq-title">Equipment<small class="num">43</small></div>
+    <nav class="eq-nav js-eq-nav" aria-label="Equipment by alarm type"></nav>
   </aside>
 
   <!-- ===== Center: diagnosis board ===== -->
   <main class="main">
-    <header class="page-head">
-      <div>
-        <div class="crumb">Fleet / <b>Vessel 1 · <span class="js-vessel">MARIN</span></b></div>
-      </div>
-      <div class="toolbar">
-        <div class="period">
-          <label class="rt"><span>Real-time</span><input type="checkbox" role="switch" class="js-realtime"><i aria-hidden="true"></i></label>
-          <span class="range"><b>Today</b><span class="num mono js-range">2026-10-27 00:00~2026-10-27 10:25</span></span>
-          <button class="icon-btn" type="button" title="More options" aria-label="More options">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg>
-          </button>
-        </div>
-        <button class="icon-btn js-refresh" type="button" title="Refresh" aria-label="Refresh">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8A5.5 5.5 0 1 1 11.6 3.8"/><path d="M12 1.5v2.8H9.2"/></svg>
-        </button>
-        <button class="icon-btn theme-btn js-theme" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
-          <svg class="i-moon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>
-          <svg class="i-sun" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1 1M12 12l1 1M3 13l1-1M12 4l1-1"/></svg>
-        </button>
-      </div>
-    </header>
-
     <section class="kpis">
       <!-- Health Index -->
       <article class="card" data-card="health">
@@ -628,8 +652,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       <div class="card-head">
         <h2>Equipment Diagnosis</h2>
         <span class="pill js-diag-pill"></span>
-        <span class="scope">Pick a status in the Alarm card</span>
+        <span class="scope">Pick a status in the Alarm card or equipment on the left</span>
       </div>
+      <div class="diag-tabs js-diag-tabs" role="tablist" aria-label="Equipment in this status"></div>
       <div class="worst-body js-diag-body">
         <div class="insight js-diag-info"></div>
         <div class="ship-view">
@@ -697,15 +722,51 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     ["Shaft Generator", 98, 0], ["Cargo Pump", 98, 0], ["Fire Pump", 98, 0],
     ["Sewage Treatment", 98, 0], ["Bilge Pump", 99, 0], ["HVAC", 99, 0], ["Incinerator", 99, 0]
   ];
-  // Alarm status of all 43 monitored equipment (sample values from the live system)
+  // Alarm status of all 43 monitored equipment (sample values)
   const alarms = [
-    { name: "Critical", value: 0, color: "--st-crit", pill: "st-crit", eq: "—" },
-    { name: "Undetected Fault", value: 1, color: "--st-undet", pill: "st-undet", eq: "Auxiliary Boiler" },
-    { name: "Unknown Fault", value: 0, color: "--st-unk", pill: "st-unk", eq: "—" },
-    { name: "Good", value: 26, color: "--good", pill: "good", eq: "26 equipment" },
-    { name: "Not Running", value: 16, color: "--st-off", pill: "st-off", eq: "16 equipment" }
+    { name: "Critical", value: 2, color: "--st-crit", pill: "st-crit" },
+    { name: "Undetected Fault", value: 3, color: "--st-undet", pill: "st-undet" },
+    { name: "Unknown Fault", value: 1, color: "--st-unk", pill: "st-unk" },
+    { name: "Good", value: 21, color: "--good", pill: "good" },
+    { name: "Not Running", value: 16, color: "--st-off", pill: "st-off" }
   ];
   const alarmTypes = Object.fromEntries(alarms.map(a => [a.name, a.pill]));
+
+  // Equipment with an alarm. Supervised: similarity to learned fault scenarios (threshold 80%).
+  // Unsupervised: health = distance from the normal-state cluster (abnormal above 1.00).
+  const faults = [
+    { id: "me2-comb", status: "Critical", eq: "Main Engine 2 Combustion", code: "ME-02", system: "Engine room · Main engine",
+      icon: "engine", at: [84, 222], scenario: "ME_ME2_Cyl_comb_abnormal", similarity: 88.4, cause: "ME2_Cyl4_ExhGasTemp",
+      health: 1.42, drift: ["DERIV_Cyl4_Cyl5_ExhTemp_Max", "ME2_Pmax_Cyl4", "ME2_ScavAirTemp"] },
+    { id: "ge3-cool", status: "Critical", eq: "Generator Engine 3 Cooling", code: "GE-03", system: "Engine room · Generator",
+      icon: "generator", at: [108, 206], scenario: "GE_GE3_JCW_temp_high", similarity: 85.1, cause: "GE3_JCW_OutletTemp",
+      health: 1.18, drift: ["DERIV_JCW_In_Out_Temp_Max", "GE3_JCW_Pressure", "GE3_LT_CoolerOutTemp"] },
+    { id: "aux-blr", status: "Undetected Fault", eq: "Auxiliary Boiler", code: "AB-02", system: "Engine room · Boiler",
+      icon: "boiler", at: [128, 194], scenario: "AB_AB2_Steam_pres_low", similarity: 92.0, cause: "Blr_AuxBlr2_StmPrs",
+      health: 0.51, drift: ["DERIV_DrumLvl1_DrumLvl2_Max", "DERIV_GasTemp1_GasTemp2_Max", "DERIV_StmPrs1_StmPrs2_Max"] },
+    { id: "ldc2", status: "Undetected Fault", eq: "Low Duty Compressor 2", code: "LDC-02", system: "Cargo compressor room",
+      icon: "compressor", at: [196, 159], scenario: "LDC_LDC2_Surge_risk", similarity: 83.6, cause: "LDC2_DischPrs",
+      health: 0.74, drift: ["DERIV_SuctTemp_DischTemp_Max", "LDC2_IGV_Position", "LDC2_MotorCurrent"] },
+    { id: "ge2-lub", status: "Undetected Fault", eq: "Generator Engine 2 Lubrication", code: "GE-02", system: "Engine room · Generator",
+      icon: "generator", at: [150, 224], scenario: "GE_GE2_LO_pres_low", similarity: 81.2, cause: "GE2_LO_InletPrs",
+      health: 0.63, drift: ["DERIV_LO_FilterDiffPrs_Max", "GE2_LO_Temp", "GE2_LO_SumpLevel"] },
+    { id: "fop1", status: "Unknown Fault", eq: "Fuel Oil Purifier 1", code: "FOP-01", system: "Engine room · Purifier room",
+      icon: "purifier", at: [158, 202], scenario: null, nearest: "FOP_FOP1_Bowl_open_fail", similarity: 46.2, cause: null,
+      health: 1.31, drift: ["FOP1_FeedPump_Prs", "DERIV_FOP1_FeedTemp_Max", "FOP1_MotorCurrent"] }
+  ];
+  const goodEq = ["Main Engine 1 Combustion", "Main Engine 1 Cooling", "Main Engine 2 Cooling", "Main Engine 1 Lubrication",
+    "Main Engine 2 Lubrication", "Main Engine 1 Fuel", "Main Engine 2 Fuel", "Generator Engine 1 Cooling", "Generator Engine 2 Cooling",
+    "Generator Engine 1 Fuel", "Generator Engine 2 Fuel", "Generator Engine 1 Lubrication", "Generator Engine 3 Lubrication",
+    "Generator Engine 2 Combustion", "Generator Engine 3 Combustion", "Low Duty Compressor 1", "Main Air Compressor 1",
+    "Main Air Compressor 2", "Fuel Oil Purifier 2", "Lube Oil Purifier 1", "Steering Gear"];
+  const offEq = ["Generator Engine 4 Cooling", "Generator Engine 4 Fuel", "Generator Engine 4 Lubrication", "Generator Engine 4 Combustion",
+    "Ballast Pump 1", "Ballast Pump 2", "High Duty Compressor 1", "High Duty Compressor 2", "Lube Oil Purifier 2",
+    "Emergency Generator", "Inert Gas Generator", "Gas Combustion Unit", "Forcing Vaporizer", "LNG Vaporizer",
+    "Nitrogen Generator", "Fresh Water Generator"];
+  alarms.forEach(a => {
+    const names = faults.filter(f => f.status === a.name).map(f => f.eq);
+    a.eq = names.length ? names.join(", ") : `${a.value} equipment`;
+  });
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   // ---------- Card tables ----------
@@ -777,17 +838,42 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   });
 
   // ---------- Equipment diagnosis ----------
-  // Supervised: similarity to learned fault scenarios. Unsupervised: distance from the normal-state cluster.
-  const diagnoses = {
-    "Undetected Fault": {
-      eq: "Auxiliary Boiler", system: "Engine room · Boiler", code: "AB-02",
-      summary: "Health is within the normal range, but the pattern resembles a learned fault scenario.",
-      scenario: "AB_AB2_Steam_pres_low", similarity: 92.0, simLimit: 80,
-      cause: "Blr_AuxBlr2_StmPrs", causeNote: "RCA rule cause parameter of the scenario",
-      health: 0.51, healthLimit: 1.0,
-      drift: ["DERIV_DrumLvl1_DrumLvl2_Max", "DERIV_GasTemp1_GasTemp2_Max", "DERIV_StmPrs1_StmPrs2_Max"]
-    }
+  const statusOf = Object.fromEntries(alarms.map(a => [a.name, a]));
+  const shapes = {
+    "Critical": '<path d="M7 1 13 7 7 13 1 7z" fill="var(--st-crit)"/>',
+    "Undetected Fault": '<path d="M7 1.5 13 12.5H1z" fill="var(--st-undet)"/>',
+    "Unknown Fault": '<rect x="2" y="2" width="10" height="10" fill="var(--st-unk)"/>',
+    "Good": '<circle cx="7" cy="7" r="5" fill="var(--good)"/>',
+    "Not Running": '<circle cx="7" cy="7" r="4.5" fill="none" stroke="var(--st-off)" stroke-width="2"/>'
   };
+  const stIcon = (type, size = 12) => `<svg class="st-ico" width="${size}" height="${size}" viewBox="0 0 14 14" aria-hidden="true">${shapes[type]}</svg>`;
+  const chev = '<svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>';
+
+  // Left sidebar: equipment grouped by alarm type
+  const nav = document.querySelector(".js-eq-nav");
+  nav.innerHTML = alarms.map(a => {
+    const list = faults.filter(f => f.status === a.name);
+    const items = list.length
+      ? list.map(f => `<li><button class="eq-item" type="button" data-id="${f.id}">${stIcon(a.name, 10)}<span>${f.eq}</span></button></li>`).join("")
+      : (a.name === "Good" ? goodEq : offEq).map(n => `<li><span class="eq-item plain">${stIcon(a.name, 10)}<span>${n}</span></span></li>`).join("");
+    const open = list.length > 0;
+    return `<div class="eq-group" data-group="${a.name}">
+      <button class="eq-group-btn" type="button" aria-expanded="${open}">${stIcon(a.name)}${a.name}<span class="n">${a.value}</span>${chev}</button>
+      <ul class="eq-items"${open ? "" : " hidden"}>${items}</ul></div>`;
+  }).join("");
+  nav.addEventListener("click", e => {
+    const g = e.target.closest(".eq-group-btn");
+    if (g) {
+      const open = g.getAttribute("aria-expanded") !== "true";
+      g.setAttribute("aria-expanded", String(open));
+      g.nextElementSibling.hidden = !open;
+      return;
+    }
+    const it = e.target.closest("button.eq-item");
+    if (it) { const f = faults.find(x => x.id === it.dataset.id); select(f.status, f.id); }
+  });
+
+  // Alarm card rows and donut segments pick a status
   const pickable = ["Critical", "Undetected Fault", "Unknown Fault"];
   const alarmCard = document.querySelector('[data-card="alarm"]');
   alarmCard.querySelectorAll("tr[data-type]").forEach(tr => {
@@ -800,104 +886,159 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   });
   alarmCard.addEventListener("click", e => {
     const el = e.target.closest("[data-type]");
-    if (el && pickable.includes(el.dataset.type)) showDiagnosis(el.dataset.type);
+    if (el && pickable.includes(el.dataset.type)) select(el.dataset.type);
   });
   alarmCard.addEventListener("keydown", e => {
     const el = e.target.closest("tr.pick");
-    if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showDiagnosis(el.dataset.type); }
+    if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); select(el.dataset.type); }
   });
 
-  function showDiagnosis(type) {
-    const a = alarms.find(x => x.name === type);
+  // Equipment tabs inside the diagnosis card
+  const tabsEl = document.querySelector(".js-diag-tabs");
+  tabsEl.addEventListener("click", e => {
+    const t = e.target.closest(".diag-tab");
+    if (t) { const f = faults.find(x => x.id === t.dataset.id); select(f.status, f.id); }
+  });
+
+  function select(type, id) {
+    const st = statusOf[type];
+    const list = faults.filter(f => f.status === type);
+    const f = list.find(x => x.id === id) || list[0];
     const pill = document.querySelector(".js-diag-pill");
-    pill.className = "pill js-diag-pill " + a.pill;
-    pill.textContent = type;
+    pill.className = "pill js-diag-pill " + st.pill;
+    pill.textContent = `${type} · ${list.length}`;
     alarmCard.querySelectorAll("tr.pick").forEach(tr => tr.classList.toggle("on", tr.dataset.type === type));
-    const d = diagnoses[type];
+    tabsEl.style.setProperty("--tab-c", `var(${st.color})`);
+    tabsEl.innerHTML = list.map((x, i) =>
+      `<button class="diag-tab" role="tab" type="button" data-id="${x.id}" aria-selected="${x === f}"><span class="rank">#${i + 1}</span>${stIcon(type, 10)}${x.eq}</button>`
+    ).join("");
+    nav.querySelectorAll("button.eq-item").forEach(b => b.classList.toggle("active", !!f && b.dataset.id === f.id));
     const body = document.querySelector(".js-diag-body"), empty = document.querySelector(".js-diag-empty");
-    body.hidden = !d;
-    empty.hidden = !!d;
-    if (!d) {
+    body.hidden = !f;
+    empty.hidden = !!f;
+    if (!f) {
       empty.innerHTML = `<div><b>No equipment in this status</b><br>${type} · 0 of ${alTotal} equipment</div>`;
       return;
     }
+    renderDiagnosis(f, st);
+  }
+
+  const copy = {
+    "Critical": ["Health is outside the normal range and the pattern matches a learned fault scenario.", "needs checking now"],
+    "Undetected Fault": ["Health is within the normal range, but the pattern resembles a learned fault scenario.", "shows a fault sign"],
+    "Unknown Fault": ["Health is outside the normal range, but no learned fault scenario matches.", "shows a new anomaly type"]
+  };
+  function renderDiagnosis(f, st) {
+    const c = `var(${st.color})`, hMax = 2;
+    const [summary, verb] = copy[f.status];
+    const known = !!f.scenario;
+    const scenarioRows = known ? `
+        <div class="model-row"><span>Scenario</span><b class="mono">${f.scenario}</b></div>
+        <div class="model-row"><span>Similarity</span><div class="meter"><b class="num">${f.similarity.toFixed(1)}%</b>
+          <span class="track2"><i style="width:${f.similarity}%;background:${c}"></i><u style="left:80%"></u></span><small>threshold 80%</small></div></div>
+        <div class="model-row"><span>Root-cause candidate<small class="ord" style="color:${c}">Check 1st</small></span><span><b class="mono">${f.cause}</b><br><small style="color:var(--muted)">RCA rule cause parameter of the scenario</small></span></div>` : `
+        <div class="model-row"><span>Scenario</span><b style="color:var(--muted)">No matching scenario</b></div>
+        <div class="model-row"><span>Closest</span><div><span class="mono" style="font-size:12px">${f.nearest}</span><div class="meter"><b class="num">${f.similarity.toFixed(1)}%</b>
+          <span class="track2"><i style="width:${f.similarity}%;background:var(--st-off)"></i><u style="left:80%"></u></span><small>below 80%</small></div></div></div>
+        <div class="model-row"><span>Root-cause candidate</span><span style="color:var(--muted)">No RCA rule — start with the drifting parameters</span></div>`;
     document.querySelector(".js-diag-info").innerHTML = `
-      <div class="diag-alert">${d.summary}</div>
-      <p class="headline">${d.eq} shows a <em>fault sign</em>.</p>
-      <p class="eq-sub">${d.system} · ${d.code}</p>
+      <div class="diag-alert">${summary}</div>
+      <p class="headline">${f.eq} <em style="color:${c}">${verb}</em>.</p>
+      <p class="eq-sub">${f.system} · ${f.code}</p>
       <div class="model">
-        <div class="model-head">Most similar fault scenario<span class="k sup">SUPERVISED</span></div>
-        <div class="model-row"><span>Scenario</span><b class="mono">${d.scenario}</b></div>
-        <div class="model-row"><span>Similarity</span><div class="meter"><b class="num">${d.similarity.toFixed(1)}%</b>
-          <span class="track2"><i style="width:${d.similarity}%;background:var(--st-undet)"></i><u style="left:${d.simLimit}%"></u></span><small>threshold ${d.simLimit}%</small></div></div>
-        <div class="model-row"><span>Root-cause candidate<small class="ord">Check 1st</small></span><span><b class="mono">${d.cause}</b><br><small style="color:var(--muted)">${d.causeNote}</small></span></div>
+        <div class="model-head">Most similar fault scenario<span class="k sup">SUPERVISED</span></div>${scenarioRows}
       </div>
       <div class="model">
         <div class="model-head">Deviation from the normal state<span class="k uns">UNSUPERVISED</span></div>
-        <div class="model-row"><span>Health</span><div class="meter"><b class="num">${d.health.toFixed(2)}</b>
-          <span class="track2"><i style="width:${d.health / 1.5 * 100}%;background:var(--good)"></i><u style="left:${d.healthLimit / 1.5 * 100}%"></u></span><small>abnormal above ${d.healthLimit.toFixed(2)}</small></div></div>
-        <div class="model-row"><span>Drifting parameters<small class="ord">Check 2nd</small></span><ul class="param-list">${d.drift.map(p => `<li>${p}</li>`).join("")}</ul></div>
+        <div class="model-row"><span>Health</span><div class="meter"><b class="num">${f.health.toFixed(2)}</b>
+          <span class="track2"><i style="width:${Math.min(f.health / hMax, 1) * 100}%;background:${f.health > 1 ? c : "var(--good)"}"></i><u style="left:${100 / hMax}%"></u></span><small>abnormal above 1.00</small></div></div>
+        <div class="model-row"><span>Drifting parameters<small class="ord" style="color:${c}">${known ? "Check 2nd" : "Check 1st"}</small></span><ul class="param-list">${f.drift.map(p => `<li>${p}</li>`).join("")}</ul></div>
       </div>`;
-    document.querySelector(".js-ship-caption").textContent = `${d.eq} · ${d.system}`;
-    drawShip(d);
+    document.querySelector(".js-ship-caption").textContent = `${f.eq} · ${f.system}`;
+    drawShip(f, c);
   }
 
-  // Monochrome LNG carrier side view; only the equipment marker is coloured
-  function drawShip(d) {
-    const ink = "currentColor", fill = "var(--surface)";
+  // Zoomed equipment drawings for the callout (monochrome); s = sensor point
+  const ink = "currentColor", paper = "var(--surface)";
+  const drawings = {
+    boiler: (x, y) => ({ s: [x + 92, y + 30], d:
+      `<rect x="${x + 18}" y="${y + 30}" width="44" height="76" rx="10" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <rect x="${x + 10}" y="${y + 22}" width="60" height="16" rx="8" fill="${paper}" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 34} ${y + 22} V${y + 10} H${x + 46} V${y + 22}" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 4} ${y + 92} H${x + 18} M${x + 4} ${y + 86} V${y + 98}" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 30} ${y + 92} q6 -14 10 -2 q4 -14 10 2" fill="none" stroke="${ink}" stroke-opacity=".6"/>
+       <line x1="${x + 70}" y1="${y + 30}" x2="${x + 86}" y2="${y + 30}" stroke="${ink}" stroke-width="1.4"/>` }),
+    engine: (x, y) => ({ s: [x + 86, y + 22], d:
+      `<rect x="${x + 4}" y="${y + 46}" width="92" height="44" rx="4" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       ${[0, 1, 2, 3].map(k => `<rect x="${x + 10 + k * 21}" y="${y + 30}" width="16" height="16" rx="2" fill="none" stroke="${ink}" stroke-width="1.4"/>`).join("")}
+       <path d="M${x + 4} ${y + 98} H${x + 96} M${x + 12} ${y + 90} V${y + 98} M${x + 88} ${y + 90} V${y + 98}" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 18} ${y + 30} V${y + 22} H${x + 80}" fill="none" stroke="${ink}" stroke-width="1.4"/>` }),
+    generator: (x, y) => ({ s: [x + 40, y + 40], d:
+      `<rect x="${x + 2}" y="${y + 50}" width="58" height="40" rx="4" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       ${[0, 1, 2].map(k => `<rect x="${x + 8 + k * 17}" y="${y + 36}" width="13" height="14" rx="2" fill="none" stroke="${ink}" stroke-width="1.4"/>`).join("")}
+       <circle cx="${x + 82}" cy="${y + 70}" r="20" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <circle cx="${x + 82}" cy="${y + 70}" r="6" fill="none" stroke="${ink}" stroke-opacity=".6"/>
+       <line x1="${x + 60}" y1="${y + 70}" x2="${x + 62}" y2="${y + 70}" stroke="${ink}" stroke-width="3"/>
+       <path d="M${x} ${y + 98} H${x + 104}" stroke="${ink}" stroke-width="1.4"/>` }),
+    compressor: (x, y) => ({ s: [x + 92, y + 22], d:
+      `<circle cx="${x + 56}" cy="${y + 66}" r="28" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <circle cx="${x + 56}" cy="${y + 66}" r="9" fill="none" stroke="${ink}" stroke-opacity=".6"/>
+       <path d="M${x + 76} ${y + 46} V${y + 22} H${x + 86}" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <rect x="${x + 2}" y="${y + 54}" width="26" height="24" rx="3" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x} ${y + 98} H${x + 98}" stroke="${ink}" stroke-width="1.4"/>` }),
+    purifier: (x, y) => ({ s: [x + 80, y + 26], d:
+      `<path d="M${x + 22} ${y + 30} H${x + 78} L${x + 66} ${y + 62} H${x + 34} Z" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <rect x="${x + 26}" y="${y + 62}" width="48" height="26" rx="3" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 50} ${y + 30} V${y + 18} M${x + 50} ${y + 26} H${x + 74}" fill="none" stroke="${ink}" stroke-width="1.4"/>
+       <path d="M${x + 16} ${y + 98} H${x + 84} M${x + 30} ${y + 88} V${y + 98} M${x + 70} ${y + 88} V${y + 98}" stroke="${ink}" stroke-width="1.4"/>` })
+  };
+
+  // Monochrome LNG carrier side view; only the equipment marker and callout are coloured
+  function drawShip(f, c) {
     let o = "";
-    // sea
     o += `<line x1="0" y1="226" x2="640" y2="226" stroke="${ink}" stroke-opacity=".35" stroke-dasharray="6 5"/>`;
-    // hull (stern left, bow right)
-    o += `<path d="M28 168 L36 236 Q40 250 58 250 L566 250 Q596 250 604 236 Q622 230 622 214 Q614 196 618 168 Z" fill="${fill}" stroke="${ink}" stroke-width="1.5"/>`;
-    // trunk deck + cargo domes
-    o += `<path d="M176 168 V150 H590 V168" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<path d="M28 168 L36 236 Q40 250 58 250 L566 250 Q596 250 604 236 Q622 230 622 214 Q614 196 618 168 Z" fill="${paper}" stroke="${ink}" stroke-width="1.5"/>`;
+    o += `<path d="M176 168 V150 H590 V168" fill="${paper}" stroke="${ink}" stroke-width="1.2"/>`;
     [0, 1, 2, 3].forEach(k => {
       const x0 = 186 + k * 102;
       o += `<rect x="${x0}" y="176" width="94" height="66" rx="4" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-dasharray="4 3"/>`;
       o += `<text x="${x0 + 47}" y="213" text-anchor="middle">Cargo tank ${4 - k}</text>`;
-      o += `<rect x="${x0 + 38}" y="142" width="18" height="8" rx="2" fill="${fill}" stroke="${ink}"/>`;
+      o += `<rect x="${x0 + 38}" y="142" width="18" height="8" rx="2" fill="${paper}" stroke="${ink}"/>`;
     });
-    // accommodation, bridge and funnel
+    o += `<rect x="180" y="152" width="36" height="14" rx="2" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-dasharray="3 2"/>`;
     o += `<path d="M44 168 V116 H60 V84 H40 V74 H62" fill="none" stroke="${ink}" stroke-width="1.2"/>`;
-    o += `<rect x="60" y="92" width="92" height="76" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
-    o += `<rect x="54" y="82" width="104" height="10" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
-    for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++)
-      o += `<rect x="${68 + c * 13}" y="${100 + r * 16}" width="7" height="5" fill="${ink}" fill-opacity=".45"/>`;
-    o += `<path d="M30 168 V108 L36 92 H52 V168" fill="${fill}" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<rect x="60" y="92" width="92" height="76" fill="${paper}" stroke="${ink}" stroke-width="1.2"/>`;
+    o += `<rect x="54" y="82" width="104" height="10" fill="${paper}" stroke="${ink}" stroke-width="1.2"/>`;
+    for (let r = 0; r < 4; r++) for (let k = 0; k < 6; k++)
+      o += `<rect x="${68 + k * 13}" y="${100 + r * 16}" width="7" height="5" fill="${ink}" fill-opacity=".45"/>`;
+    o += `<path d="M30 168 V108 L36 92 H52 V168" fill="${paper}" stroke="${ink}" stroke-width="1.2"/>`;
     o += `<line x1="104" y1="82" x2="104" y2="62" stroke="${ink}"/><line x1="96" y1="68" x2="112" y2="68" stroke="${ink}"/>`;
-    // engine room
     o += `<rect x="42" y="176" width="130" height="66" rx="4" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-dasharray="4 3"/>`;
-    o += `<text x="60" y="236">Engine room</text>`;
-    // equipment marker (auxiliary boiler, upper engine room)
-    const mx = 128, my = 196;
-    o += `<circle class="ping" cx="${mx}" cy="${my}" r="9" fill="var(--st-undet)"/>`;
-    o += `<circle cx="${mx}" cy="${my}" r="5" fill="var(--st-undet)" stroke="var(--surface)" stroke-width="2"/>`;
-    // callout with a zoomed boiler drawing
-    const bx = 330, by = 8, bw = 300, bh = 120;
-    o += `<path d="M${mx} ${my - 6} L${mx + 60} 120 L${bx} 120" fill="none" stroke="var(--st-undet)" stroke-width="1.2"/>`;
-    o += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="8" fill="${fill}" stroke="var(--st-undet)" stroke-width="1.2"/>`;
-    // boiler: steam drum, furnace shell, burner, stack, gauge
-    const gx = bx + 22;
-    o += `<rect x="${gx + 18}" y="${by + 30}" width="44" height="76" rx="10" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
-    o += `<rect x="${gx + 10}" y="${by + 22}" width="60" height="16" rx="8" fill="${fill}" stroke="${ink}" stroke-width="1.4"/>`;
-    o += `<path d="M${gx + 34} ${by + 22} V${by + 10} H${gx + 46} V${by + 22}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
-    o += `<path d="M${gx + 4} ${by + 92} H${gx + 18} M${gx + 4} ${by + 86} V${by + 98}" stroke="${ink}" stroke-width="1.4"/>`;
-    o += `<path d="M${gx + 30} ${by + 92} q6 -14 10 -2 q4 -14 10 2" fill="none" stroke="${ink}" stroke-opacity=".6"/>`;
-    o += `<line x1="${gx + 70}" y1="${by + 30}" x2="${gx + 86}" y2="${by + 30}" stroke="${ink}" stroke-width="1.4"/>`;
-    o += `<circle cx="${gx + 92}" cy="${by + 30}" r="6" fill="${fill}" stroke="var(--st-undet)" stroke-width="2"/>`;
-    o += `<line x1="${gx + 92}" y1="${by + 30}" x2="${gx + 95}" y2="${by + 26}" stroke="var(--st-undet)" stroke-width="1.5"/>`;
-    // labels
-    const tx = bx + 140;
-    o += `<text x="${tx}" y="${by + 26}" style="fill:var(--fg);font-size:13px;font-weight:600">${d.eq}</text>`;
-    o += `<text x="${tx}" y="${by + 42}">${d.code} · ${d.system}</text>`;
-    o += `<text x="${tx}" y="${by + 66}">Pressure sensor</text>`;
-    o += `<text x="${tx}" y="${by + 80}" style="fill:var(--st-undet);font-family:var(--font-mono)">${d.cause}</text>`;
-    o += `<text x="${tx}" y="${by + 104}">Health ${d.health.toFixed(2)} · Similarity ${d.similarity.toFixed(1)}%</text>`;
+    o += `<text x="48" y="188">Engine room</text>`;
+    // other alarm equipment as small grey dots, the selected one as a coloured marker
+    faults.forEach(x => { if (x !== f) o += `<circle cx="${x.at[0]}" cy="${x.at[1]}" r="3.5" fill="${ink}" fill-opacity=".45"/>`; });
+    const [mx, my] = f.at;
+    o += `<circle class="ping" cx="${mx}" cy="${my}" r="9" fill="${c}"/>`;
+    o += `<circle cx="${mx}" cy="${my}" r="5" fill="${c}" stroke="var(--surface)" stroke-width="2"/>`;
+    const bx = 320, by = 8, bw = 310, bh = 120;
+    o += `<path d="M${mx} ${my - 6} L${Math.max(mx + 40, 230)} 120 L${bx} 120" fill="none" stroke="${c}" stroke-width="1.2"/>`;
+    o += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="8" fill="${paper}" stroke="${c}" stroke-width="1.2"/>`;
+    const dr = drawings[f.icon](bx + 16, by);
+    o += dr.d;
+    o += `<circle cx="${dr.s[0]}" cy="${dr.s[1]}" r="6" fill="${paper}" stroke="${c}" stroke-width="2"/>`;
+    o += `<circle cx="${dr.s[0]}" cy="${dr.s[1]}" r="2" fill="${c}"/>`;
+    const tx = bx + 132;
+    o += `<text x="${tx}" y="${by + 26}" style="fill:var(--fg);font-size:13px;font-weight:600">${f.eq.length > 24 ? f.eq.replace(/ (\S+)$/, "") : f.eq}</text>`;
+    if (f.eq.length > 24) o += `<text x="${tx}" y="${by + 41}" style="fill:var(--fg);font-size:13px;font-weight:600">${f.eq.match(/(\S+)$/)[1]}</text>`;
+    const off = f.eq.length > 24 ? 15 : 0;
+    o += `<text x="${tx}" y="${by + 42 + off}">${f.code} · ${f.system}</text>`;
+    o += `<text x="${tx}" y="${by + 66 + off}">${f.cause ? "Root-cause sensor" : "Top drifting parameter"}</text>`;
+    o += `<text x="${tx}" y="${by + 80 + off}" style="fill:${c};font-family:var(--font-mono)">${f.cause || f.drift[0]}</text>`;
+    o += `<text x="${tx}" y="${by + 104 + off / 2}">Health ${f.health.toFixed(2)} · ${f.scenario ? "Similarity" : "Closest"} ${f.similarity.toFixed(1)}%</text>`;
     o += `<text x="20" y="274">AFT</text><text x="620" y="274" text-anchor="end">FWD</text>`;
     document.querySelector(".js-ship-map").innerHTML = o;
   }
-  showDiagnosis("Undetected Fault");
+  select("Critical");
 
   // ---------- RUL mini charts ----------
   // Predicted remaining useful life over the last 30 days, with the forecast to end of life
@@ -974,10 +1115,13 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   document.querySelector(".js-ship").style.left = progress + "%";
 
   // ---------- Vessel selection ----------
+  // Sample data is shared by all vessels; only the selection changes
   document.querySelectorAll("[data-vessel]").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-vessel]").forEach(b => b.classList.toggle("active", b === btn));
-      document.querySelectorAll(".js-vessel").forEach(el => el.textContent = btn.dataset.vessel);
+      document.querySelectorAll("[data-vessel]").forEach(b => {
+        b.classList.toggle("active", b === btn);
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
     });
   });
 
