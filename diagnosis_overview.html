@@ -27,6 +27,7 @@
   --health: #F2B300;
   --health-rest: #34424F;
   --band: rgba(30, 154, 96, 0.10);
+  --st-crit: #9B2335; --st-undet: #C2652A; --st-unk: #2E3F8F; --st-off: #98A4AE;
   --bar-bg: #2F5BD8;
   --bar-pill: #2449B8;
   --font-sans: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -40,6 +41,7 @@
     --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
     --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
     --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+    --st-crit: #E2627A; --st-undet: #E8894A; --st-unk: #7D8FE6; --st-off: #7C8A96;
     --bar-bg: #1F3E99; --bar-pill: #17307A;
     color-scheme: dark;
   }
@@ -50,6 +52,7 @@
   --nav-bg: #09161F; --nav-fg: #A9BAC7; --nav-active: #18374E;
   --good: #35B97A; --warn: #F0A030; --crit: #EF6262; --info: #5C95E8;
   --health: #F2B300; --health-rest: #5A6A78; --band: rgba(53, 185, 122, 0.13);
+    --st-crit: #E2627A; --st-undet: #E8894A; --st-unk: #7D8FE6; --st-off: #7C8A96;
     --bar-bg: #1F3E99; --bar-pill: #17307A;
   color-scheme: dark;
 }
@@ -251,6 +254,12 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .card-body { height: 178px; min-width: 0; }
 .view-chart { display: flex; align-items: center; gap: 14px; height: 100%; }
 .view-table { height: 100%; overflow: auto; }
+/* Alarm card has five types: let long names wrap so the table fits beside the donut */
+[data-card="alarm"] .sum td { padding-block: 4px; }
+[data-card="alarm"] .view-chart { gap: 10px; }
+[data-card="alarm"] .donut { width: 108px; height: 108px; }
+[data-card="alarm"] .sum th, [data-card="alarm"] .sum td { padding-inline: 3px; }
+[data-card="alarm"] .sum td:first-child { white-space: normal; padding-left: 18px; text-indent: -14px; line-height: 1.25; }
 
 /* summary table next to donut */
 .sum { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -275,6 +284,10 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
 .pill.crit { color: var(--crit); background: color-mix(in srgb, var(--crit) 14%, transparent); }
 .pill.info { color: var(--info); background: color-mix(in srgb, var(--info) 14%, transparent); }
+.pill.st-crit { color: var(--st-crit); background: color-mix(in srgb, var(--st-crit) 14%, transparent); }
+.pill.st-undet { color: var(--st-undet); background: color-mix(in srgb, var(--st-undet) 16%, transparent); }
+.pill.st-unk { color: var(--st-unk); background: color-mix(in srgb, var(--st-unk) 14%, transparent); }
+.pill.st-off { color: var(--muted); background: color-mix(in srgb, var(--st-off) 18%, transparent); }
 .hbar { display: inline-block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface-2);
   vertical-align: middle; margin-right: 6px; overflow: hidden; border: 1px solid var(--line); }
 .hbar i { display: block; height: 100%; background: var(--health); }
@@ -293,6 +306,9 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
   .view-chart { gap: 10px; }
   .sum { font-size: 11px; }
   .sum th, .sum td { padding-inline: 3px; }
+  [data-card="alarm"] .donut { width: 84px; height: 84px; }
+  [data-card="alarm"] .view-chart { gap: 6px; }
+  [data-card="alarm"] .sum th, [data-card="alarm"] .sum td { padding-inline: 2px; }
 }
 .seg { cursor: pointer; transition: opacity 0.15s ease; }
 svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
@@ -600,11 +616,11 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
         </div>
         <div class="card-body">
           <div class="view-chart">
-            <svg class="donut js-donut-al" viewBox="0 0 120 120" role="img" aria-label="12 alarms by type"></svg>
+            <svg class="donut js-donut-al" viewBox="0 0 120 120" role="img" aria-label="43 equipment by alarm type"></svg>
             <table class="sum"><thead><tr><th>Type</th><th>Count</th><th>Rate</th></tr></thead><tbody class="js-al-sum"></tbody></table>
           </div>
           <div class="view-table" hidden>
-            <table class="detail"><thead><tr><th>Type</th><th>Parameter</th><th class="r">Count</th></tr></thead><tbody class="js-al-rows"></tbody></table>
+            <table class="detail"><thead><tr><th>Type</th><th>Equipment</th><th class="r">Count</th></tr></thead><tbody class="js-al-rows"></tbody></table>
           </div>
         </div>
       </article>
@@ -700,9 +716,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
         <div>
           <h3>Today's alarms to check</h3>
           <ul class="list">
-            <li><span class="pill warn">Unknown</span>Main Engine – Gas Pressure (4×)</li>
-            <li><span class="pill crit">Known</span>Main Engine – Jacket Cooling Water Temp (2×)</li>
-            <li><span class="pill warn">Unknown</span>Generator #1 – Exhaust Temperature (1×)</li>
+            <li><span class="pill st-undet">Undetected Fault</span>Main Engine – Gas Pressure (4×)</li>
+            <li><span class="pill good">Good</span>Generator #1 – Exhaust Temperature (rising)</li>
+            <li><span class="pill good">Good</span>Boiler – Feed Water Flow (oscillating)</li>
           </ul>
         </div>
       </div>
@@ -722,15 +738,15 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     ["Shaft Generator", 98, 0], ["Cargo Pump", 98, 0], ["Fire Pump", 98, 0],
     ["Sewage Treatment", 98, 0], ["Bilge Pump", 99, 0], ["HVAC", 99, 0], ["Incinerator", 99, 0]
   ];
+  // Alarm status of all 43 monitored equipment (sample values from the live system)
   const alarms = [
-    ["Unknown", "Gas Pressure", "Main Engine", 4],
-    ["Unknown", "Exhaust Temperature", "Generator #1", 1],
-    ["Known", "Jacket Cooling Water Temp", "Main Engine", 2],
-    ["Known", "Scavenge Air Pressure", "Main Engine", 1],
-    ["Normal", "Fuel Oil Inlet Temp", "Main Engine", 2],
-    ["Normal", "Lube Oil Pressure", "Generator #1", 2]
+    { name: "Critical", value: 0, color: "--st-crit", pill: "st-crit", eq: "—" },
+    { name: "Undetected Fault", value: 1, color: "--st-undet", pill: "st-undet", eq: "Main Engine" },
+    { name: "Unknown Fault", value: 0, color: "--st-unk", pill: "st-unk", eq: "—" },
+    { name: "Good", value: 26, color: "--good", pill: "good", eq: "26 equipment" },
+    { name: "Not Running", value: 16, color: "--st-off", pill: "st-off", eq: "16 equipment" }
   ];
-  const alarmTypes = { Unknown: "warn", Known: "crit", Normal: "info" };
+  const alarmTypes = Object.fromEntries(alarms.map(a => [a.name, a.pill]));
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   // ---------- Card tables ----------
@@ -744,16 +760,17 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     `<tr><td>${n}</td><td>${a ? '<span class="pill crit">Alarm</span>' : '<span class="pill good">No Alarm</span>'}</td><td class="r num">${a}</td></tr>`
   ).join("");
 
-  document.querySelector(".js-al-rows").innerHTML = alarms.map(([t, p, e, c]) =>
-    `<tr><td><span class="pill ${alarmTypes[t]}">${t}</span></td><td>${p}<small>${e}</small></td><td class="r num">${c}</td></tr>`
+  document.querySelector(".js-al-rows").innerHTML = alarms.map(a =>
+    `<tr><td><span class="pill ${a.pill}">${a.name}</span></td><td>${a.eq}</td><td class="r num">${a.value}</td></tr>`
   ).join("");
 
   // ---------- Donuts ----------
-  function donut(svg, segments, total, label) {
+  const pct = (v, total, dp) => (v / total * 100).toFixed(dp) + "%";
+  function donut(svg, segments, total, label, dp = 0) {
     let offset = 0, out = `<circle cx="60" cy="60" r="44" fill="none" stroke="var(--surface-2)" stroke-width="16"/>`;
-    segments.forEach(s => {
+    segments.filter(s => s.value > 0).forEach(s => {
       const len = s.value / total * 100;
-      out += `<circle class="seg" data-label="${s.name}" data-value="${s.value} (${Math.round(len)}%)" data-color="${s.color}"
+      out += `<circle class="seg" data-label="${s.name}" data-value="${s.value} (${pct(s.value, total, dp)})" data-color="${s.color}"
         cx="60" cy="60" r="44" fill="none" stroke="var(${s.color})" stroke-width="16" pathLength="100"
         stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;
       offset += len;
@@ -762,9 +779,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
             <text x="60" y="76" text-anchor="middle" font-size="22" font-weight="700" fill="var(--fg)">${total}</text>`;
     svg.innerHTML = out;
   }
-  function summary(tbody, segments, total) {
+  function summary(tbody, segments, total, dp = 0) {
     tbody.innerHTML = segments.map(s =>
-      `<tr><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${Math.round(s.value / total * 100)}%</td></tr>`
+      `<tr><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${pct(s.value, total, dp)}</td></tr>`
     ).join("");
   }
   const inAlarm = equipment.filter(e => e[2] > 0).length;
@@ -775,15 +792,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   donut(document.querySelector(".js-donut-eq"), eqSeg, equipment.length, "Total EQP");
   summary(document.querySelector(".js-eq-sum"), eqSeg, equipment.length);
 
-  const sumType = t => alarms.filter(a => a[0] === t).reduce((s, a) => s + a[3], 0);
-  const alSeg = [
-    { name: "Unknown", value: sumType("Unknown"), color: "--warn" },
-    { name: "Known", value: sumType("Known"), color: "--crit" },
-    { name: "Normal", value: sumType("Normal"), color: "--info" }
-  ];
-  const alTotal = alSeg.reduce((s, a) => s + a.value, 0);
-  donut(document.querySelector(".js-donut-al"), alSeg, alTotal, "Total");
-  summary(document.querySelector(".js-al-sum"), alSeg, alTotal);
+  const alTotal = alarms.reduce((s, a) => s + a.value, 0);
+  donut(document.querySelector(".js-donut-al"), alarms, alTotal, "Total", 1);
+  summary(document.querySelector(".js-al-sum"), alarms, alTotal, 1);
 
   // ---------- Chart tooltips ----------
   const tip = document.createElement("div");
@@ -828,21 +839,21 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     {
       eq: "Main Engine", pm: "Gas Pressure", unit: "bar", tag: "ME-01 / GAS_PRESS_IN",
       desc: "Gas pressure has been falling steadily for the last 7 hours. This pattern differs from normal operation at the same engine load.",
-      score: 0.91, type: "Unknown", since: "2026-10-27 03:10", now: "7.02 bar", range: "7.9 – 9.1 bar",
+      score: 0.91, type: "Undetected Fault", since: "2026-10-27 03:10", now: "7.02 bar", range: "7.9 – 9.1 bar",
       reco: "Check the gas supply line and the pressure regulating valve. Compare with the redundant pressure sensor.",
       data: series(11, 8.5, 0.12, 68, (k) => -k * 0.055), lo: 7.9, hi: 9.1, onset: 68
     },
     {
       eq: "Generator #1", pm: "Exhaust Temperature", unit: "°C", tag: "GE-01 / EXH_TEMP_CYL3",
       desc: "Cylinder 3 exhaust temperature is rising while load is stable. The other cylinders remain within their normal range.",
-      score: 0.78, type: "Unknown", since: "2026-10-27 04:55", now: "427 °C", range: "365 – 405 °C",
+      score: 0.78, type: "Good", since: "2026-10-27 04:55", now: "427 °C", range: "365 – 405 °C",
       reco: "Inspect the cylinder 3 fuel injector and the turbocharger air filter at the next opportunity.",
       data: series(23, 385, 4, 75, (k) => k * 2.1), lo: 365, hi: 405, onset: 75
     },
     {
       eq: "Boiler", pm: "Feed Water Flow", unit: "m³/h", tag: "BLR-01 / FW_FLOW",
       desc: "Feed water flow is oscillating with a growing amplitude. No alarm has been raised yet; the anomaly model flagged it first.",
-      score: 0.64, type: "No alarm", since: "2026-10-27 01:30", now: "13.4 m³/h", range: "11.0 – 13.0 m³/h",
+      score: 0.64, type: "Good", since: "2026-10-27 01:30", now: "13.4 m³/h", range: "11.0 – 13.0 m³/h",
       reco: "Check the feed water pump and the level control valve before arrival at Ras Tanura.",
       data: series(37, 12, 0.18, 60, (k) => Math.sin(k / 1.6) * k * 0.045), lo: 11, hi: 13, onset: 60
     }
@@ -863,10 +874,9 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     document.querySelector(".js-headline").innerHTML =
       `<span class="eq">${w.eq}</span> – <span class="pm">${w.pm}</span> requires attention.`;
     document.querySelector(".js-desc").textContent = w.desc;
-    const typePill = w.type === "No alarm" ? "good" : alarmTypes[w.type];
     document.querySelector(".js-facts").innerHTML = `
       <div><dt>Anomaly score</dt><dd class="num">${w.score.toFixed(2)}</dd></div>
-      <div><dt>Alarm type</dt><dd><span class="pill ${typePill}">${w.type}</span></dd></div>
+      <div><dt>Alarm type</dt><dd><span class="pill ${alarmTypes[w.type]}">${w.type}</span></dd></div>
       <div><dt>Current value</dt><dd class="num">${w.now}</dd></div>
       <div><dt>Normal range</dt><dd class="num">${w.range}</dd></div>
       <div><dt>First detected</dt><dd class="num">${w.since}</dd></div>`;
