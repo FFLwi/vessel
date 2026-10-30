@@ -231,7 +231,7 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .d-item.active svg { color: var(--accent); }
 .drawer-foot { padding: 10px 20px 14px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); }
 
-.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -396,16 +396,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .voyage-stats b { font-size: 14px; }
 
 .log { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-.log-vessel { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.log-vessel b { font-size: 18px; letter-spacing: 0.02em; }
-.log-vessel small { display: block; color: var(--muted); font-size: 12px; }
-.kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 6px 10px; font-size: 13px; margin: 0; }
-.kv dt { color: var(--muted); }
-.kv dd { margin: 0; }
-.weather { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 6px; padding: 10px 12px; }
-.weather svg { flex: none; color: var(--warn); }
-.weather b { font-size: 18px; }
-.weather div:last-child { font-size: 12px; color: var(--muted); }
 .log h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .list li { display: flex; gap: 8px; align-items: flex-start; }
@@ -596,27 +586,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
         </div>
       </article>
 
-      <!-- Equipment Status -->
-      <article class="card" data-card="equipment">
-        <div class="card-head">
-          <h2>Equipment Status</h2>
-          <span class="scope"># of Vessel</span>
-          <div class="toggle" role="group" aria-label="View">
-            <button data-view="chart" aria-pressed="true" title="Chart view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M7 2v5h5" stroke-width="1.6"/></svg></button>
-            <button data-view="table" aria-pressed="false" title="Table view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/><path d="M1 5h12M1 9h12M5 1v12"/></svg></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="view-chart">
-            <svg class="donut js-donut-eq" viewBox="0 0 120 120" role="img" aria-label="2 of 20 equipment in alarm"></svg>
-            <table class="sum"><thead><tr><th>Status</th><th>Count</th><th>Rate</th></tr></thead><tbody class="js-eq-sum"></tbody></table>
-          </div>
-          <div class="view-table" hidden>
-            <table class="detail"><thead><tr><th>Equipment</th><th>Status</th><th class="r">Alarms</th></tr></thead><tbody class="js-eq-rows"></tbody></table>
-          </div>
-        </div>
-      </article>
-
       <!-- Alarm -->
       <article class="card" data-card="alarm">
         <div class="card-head">
@@ -685,44 +654,26 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       </div>
     </section>
 
-    <section>
-      <h2>Voyage Log</h2>
-      <div class="log">
-        <div class="log-vessel">
-          <div><b class="js-vessel">MARIN</b><small>LNG Carrier · IMO 9812345</small></div>
-          <span class="pill good">Condition: Good</span>
+    <section class="log">
+      <div class="actions">
+        <div class="actions-head">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>
+          <h3>Action items</h3>
+          <span class="count">3</span>
         </div>
-        <dl class="kv">
-          <dt>Time</dt><dd class="num mono js-clock">2026-10-27 10:25:24</dd>
-          <dt>Position</dt><dd class="num">18.42° N, 62.15° E</dd>
-          <dt>Area</dt><dd>Arabian Sea</dd>
-          <dt>Heading</dt><dd class="num">298°</dd>
-        </dl>
-        <div class="weather">
-          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13" cy="12" r="5"/><path d="M13 2v2M3 12h2M5.9 4.9l1.4 1.4M20.1 4.9l-1.4 1.4"/><path d="M12 28h14a5 5 0 0 0 0-10 7 7 0 0 0-13 2 4 4 0 0 0-1 8z" stroke="var(--muted)" fill="var(--surface)"/></svg>
-          <div><b class="num">29°C</b><br><span class="note">Partly cloudy</span></div>
-          <div>Wind NE 14 kn<br>Wave 1.8 m · Vis 8 nm</div>
-        </div>
-        <div class="actions">
-          <div class="actions-head">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>
-            <h3>Action items</h3>
-            <span class="count">3</span>
-          </div>
-          <ul class="list">
-            <li><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span></li>
-            <li><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span></li>
-            <li><span class="pill info">Inspect</span><span><b>Check Boiler feed water pump</b><span class="rul">Before arrival at Ras Tanura</span></span></li>
-          </ul>
-        </div>
-        <div>
-          <h3>Today's alarms to check</h3>
-          <ul class="list">
-            <li><span class="pill st-undet">Undetected Fault</span>Auxiliary Boiler – Steam Pressure Low</li>
-            <li><span class="pill good">Good</span>Generator #1 – Exhaust Temperature (rising)</li>
-            <li><span class="pill good">Good</span>Boiler – Feed Water Flow (oscillating)</li>
-          </ul>
-        </div>
+        <ul class="list">
+          <li><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span></li>
+          <li><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span></li>
+          <li><span class="pill info">Inspect</span><span><b>Check Boiler feed water pump</b><span class="rul">Before arrival at Ras Tanura</span></span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today's alarms to check</h3>
+        <ul class="list">
+          <li><span class="pill st-undet">Undetected Fault</span>Auxiliary Boiler – Steam Pressure Low</li>
+          <li><span class="pill good">Good</span>Generator #1 – Exhaust Temperature (rising)</li>
+          <li><span class="pill good">Good</span>Boiler – Feed Water Flow (oscillating)</li>
+        </ul>
       </div>
     </section>
   </aside>
@@ -758,9 +709,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     return `<tr><td>${n}</td><td class="num" style="white-space:nowrap"><span class="hbar"><i style="width:${h}%"></i></span>${h}%</td><td class="r"><span class="pill ${cls}">${label}</span></td></tr>`;
   }).join("");
 
-  document.querySelector(".js-eq-rows").innerHTML = equipment.map(([n, , a]) =>
-    `<tr><td>${n}</td><td>${a ? '<span class="pill crit">Alarm</span>' : '<span class="pill good">No Alarm</span>'}</td><td class="r num">${a}</td></tr>`
-  ).join("");
 
   document.querySelector(".js-al-rows").innerHTML = alarms.map(a =>
     `<tr data-type="${a.name}"><td><span class="pill ${a.pill}">${a.name}</span></td><td>${a.eq}</td><td class="r num">${a.value}</td></tr>`
@@ -787,13 +735,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
       `<tr data-type="${s.name}"><td><i class="swatch" style="background:var(${s.color})"></i>${s.name}</td><td class="num">${s.value}</td><td class="num">${pct(s.value, total, dp)}</td></tr>`
     ).join("");
   }
-  const inAlarm = equipment.filter(e => e[2] > 0).length;
-  const eqSeg = [
-    { name: "Alarm", value: inAlarm, color: "--crit" },
-    { name: "No Alarm", value: equipment.length - inAlarm, color: "--good" }
-  ];
-  donut(document.querySelector(".js-donut-eq"), eqSeg, equipment.length, "Total EQP");
-  summary(document.querySelector(".js-eq-sum"), eqSeg, equipment.length);
 
   const alTotal = alarms.reduce((s, a) => s + a.value, 0);
   // Ring shows running equipment only; Not Running stays in the summary table
@@ -1021,11 +962,10 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   });
   drawer.querySelectorAll(".d-item").forEach(a => a.addEventListener("click", e => e.preventDefault()));
 
-  // ---------- Clock, real-time switch and refresh (starts from sample time) ----------
+  // ---------- Real-time switch and refresh (starts from sample time) ----------
   let t = new Date(2026, 9, 27, 10, 25, 24).getTime();
   const pad = v => String(v).padStart(2, "0");
   const day = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
-  const fmt = d => day(d) + " " + [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad).join(":");
   const rangeEl = document.querySelector(".js-range");
   const realtime = document.querySelector(".js-realtime");
   const refreshBtn = document.querySelector(".js-refresh");
@@ -1035,7 +975,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   }
   setInterval(() => {
     t += 1000;
-    document.querySelectorAll(".js-clock").forEach(el => el.textContent = fmt(new Date(t)));
     if (realtime.checked) updateRange();
   }, 1000);
   realtime.addEventListener("change", updateRange);
