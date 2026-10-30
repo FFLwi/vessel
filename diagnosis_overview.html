@@ -427,17 +427,19 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .list li { display: flex; gap: 8px; align-items: flex-start; }
 .list li .pill { flex: none; margin-top: 1px; }
+/* RUL Status: informational, a prompt to check rather than an alarm */
 .actions {
-  border: 1px solid color-mix(in srgb, var(--crit) 45%, var(--line));
-  background: color-mix(in srgb, var(--crit) 7%, var(--surface));
+  border: 1px solid var(--line);
+  background: var(--surface);
   border-radius: 8px; padding: 12px 14px;
 }
-.actions-head { display: flex; align-items: center; gap: 6px; color: var(--crit); margin-bottom: 10px; }
-.actions-head h3 { margin: 0; font-size: 13px; color: var(--crit); }
+.actions-head { display: flex; align-items: center; gap: 6px; color: var(--accent); margin-bottom: 2px; }
+.actions-head h3 { margin: 0; font-size: 13px; color: var(--fg); }
 .actions-head .count {
   margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 999px;
-  background: var(--crit); color: #fff; font-size: 11px; font-weight: 700; text-align: center; line-height: 20px;
+  background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; text-align: center; line-height: 20px;
 }
+.actions-sub { margin: 0 0 10px; font-size: 11px; color: var(--muted); }
 .actions .list { gap: 10px; }
 .actions .list b { font-weight: 600; }
 .list .rul { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; }
@@ -446,7 +448,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   display: flex; gap: 8px; align-items: flex-start; width: 100%; padding: 4px; margin: -4px;
   border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; width: calc(100% + 8px);
 }
-.rul-btn:hover { background: color-mix(in srgb, var(--crit) 8%, transparent); }
+.rul-btn:hover { background: var(--surface-2); }
 .rul-btn .pill { flex: none; margin-top: 1px; }
 .rul-btn .chev { flex: none; margin: 4px 0 0 auto; color: var(--muted); transition: transform 0.15s ease; }
 .rul-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
@@ -697,13 +699,14 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     <section>
       <div class="actions">
         <div class="actions-head">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5 14.5 13h-13z"/><path d="M8 6v3.5M8 11.2v.3"/></svg>
-          <h3>RUL</h3>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 1.5"/></svg>
+          <h3>RUL Status</h3>
           <span class="count">2</span>
         </div>
+        <p class="actions-sub">Remaining useful life · click an item to see its trend</p>
         <ul class="list">
-          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="0"><span class="pill crit">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
-          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="1"><span class="pill warn">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
+          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="0"><span class="pill info">RUL</span><span><b>Replace Main Engine fuel oil filter</b><span class="rul">Remaining useful life ≈ 12 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
+          <li class="rul-item"><button class="rul-btn" type="button" aria-expanded="false" data-rul="1"><span class="pill info">RUL</span><span><b>Replace Generator #1 turbocharger air filter</b><span class="rul">Remaining useful life ≈ 21 days</span></span><svg class="chev" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg></button><div class="rul-chart" hidden></div></li>
         </ul>
       </div>
     </section>
@@ -1043,8 +1046,8 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   // ---------- RUL mini charts ----------
   // Predicted remaining useful life over the last 30 days, with the forecast to end of life
   const rulItems = [
-    { rul: 12, limit: 14, seed: 41, color: "--crit" },
-    { rul: 21, limit: 14, seed: 53, color: "--warn" }
+    { rul: 12, limit: 14, seed: 41, color: "--info" },
+    { rul: 21, limit: 14, seed: 53, color: "--info" }
   ];
   const today = new Date(2026, 9, 27);
   const rng = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;
@@ -1067,8 +1070,8 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     const dn = pts.map((v, k) => `${x(k).toFixed(1)},${y(Math.max(0, v - 3 - (past - k) * 0.03)).toFixed(1)}`).reverse();
     o += `<polygon points="${up.concat(dn).join(" ")}" fill="var(${item.color})" fill-opacity=".12"/>`;
     // replace threshold
-    o += `<line x1="${L}" x2="${W - R}" y1="${y(item.limit)}" y2="${y(item.limit)}" stroke="var(--crit)" stroke-dasharray="4 3"/>`;
-    o += `<text x="${L + 4}" y="${y(item.limit) + 10}" style="fill:var(--crit)">Replace at ${item.limit} d</text>`;
+    o += `<line x1="${L}" x2="${W - R}" y1="${y(item.limit)}" y2="${y(item.limit)}" stroke="var(--warn)" stroke-dasharray="4 3"/>`;
+    o += `<text x="${L + 4}" y="${y(item.limit) + 10}" style="fill:var(--warn)">Plan replacement at ${item.limit} d</text>`;
     // history + forecast
     o += `<path d="${pts.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join("")}" fill="none" stroke="var(${item.color})" stroke-width="1.8"/>`;
     o += `<line x1="${x(past)}" y1="${y(item.rul)}" x2="${x(span)}" y2="${y(0)}" stroke="var(${item.color})" stroke-width="1.5" stroke-dasharray="3 3"/>`;
