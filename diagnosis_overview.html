@@ -323,6 +323,10 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .pill.st-undet { color: var(--st-undet); background: color-mix(in srgb, var(--st-undet) 16%, transparent); }
 .pill.st-unk { color: var(--st-unk); background: color-mix(in srgb, var(--st-unk) 14%, transparent); }
 .pill.st-off { color: var(--muted); background: color-mix(in srgb, var(--st-off) 18%, transparent); }
+.vs { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
+.vs svg { width: 100%; max-width: 220px; height: auto; }
+.vs-level { font-size: 18px; font-weight: 700; color: var(--vlvl); }
+.vs-why { font-size: 12px; color: var(--muted); }
 .hbar { display: inline-block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface-2);
   vertical-align: middle; margin-right: 6px; overflow: hidden; border: 1px solid var(--line); }
 .hbar i { display: block; height: 100%; background: var(--health); }
@@ -621,35 +625,17 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   <!-- ===== Center: diagnosis board ===== -->
   <main class="main">
     <section class="kpis">
-      <!-- Health Index -->
-      <article class="card" data-card="health">
+      <!-- Vessel Status: one verdict for the selected vessel, from its alarm counts -->
+      <article class="card" data-card="vessel">
         <div class="card-head">
-          <h2>Health Index</h2>
-          <span class="scope"># of Vessel</span>
-          <div class="toggle" role="group" aria-label="View">
-            <button data-view="chart" aria-pressed="true" title="Chart view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M7 2v5h5" stroke-width="1.6"/></svg></button>
-            <button data-view="table" aria-pressed="false" title="Table view"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/><path d="M1 5h12M1 9h12M5 1v12"/></svg></button>
-          </div>
+          <h2>Vessel Status</h2>
+          <span class="scope js-vs-name">Vessel 1 · MARIN</span>
         </div>
         <div class="card-body">
-          <div class="view-chart">
-            <div class="gauge">
-              <svg viewBox="0 0 220 128" role="img" aria-label="Health index 95 percent">
-                <path class="seg" data-label="Degraded" data-value="5%" data-color="--health-rest" d="M24 112 A86 86 0 0 1 196 112" fill="none" stroke="var(--health-rest)" stroke-width="24" pathLength="100"/>
-                <path class="seg" data-label="Healthy" data-value="95%" data-color="--health" d="M24 112 A86 86 0 0 1 196 112" fill="none" stroke="var(--health)" stroke-width="24" pathLength="100" stroke-dasharray="95 100"/>
-                <text x="110" y="98" text-anchor="middle" font-size="34" font-weight="700" fill="var(--fg)" font-family="IBM Plex Sans, sans-serif">95%</text>
-                <text x="110" y="120" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">Overall health</text>
-                <text x="24" y="127" text-anchor="middle" font-size="10" fill="var(--muted)">0</text>
-                <text x="196" y="127" text-anchor="middle" font-size="10" fill="var(--muted)">100</text>
-              </svg>
-              <div class="gauge-legend">
-                <span><i class="swatch" style="background:var(--health)"></i>Healthy 95%</span>
-                <span><i class="swatch" style="background:var(--health-rest)"></i>Degraded 5%</span>
-              </div>
-            </div>
-          </div>
-          <div class="view-table" hidden>
-            <table class="detail"><thead><tr><th>Equipment</th><th>Health</th><th class="r">Status</th></tr></thead><tbody class="js-health-rows"></tbody></table>
+          <div class="vs js-vs">
+            <svg class="js-vs-gauge" viewBox="0 0 220 132" role="img"></svg>
+            <span class="vs-level js-vs-level"></span>
+            <span class="vs-why js-vs-why"></span>
           </div>
         </div>
       </article>
@@ -745,14 +731,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 <script>
 (function () {
   // ---------- Sample data ----------
-  const equipment = [
-    ["Main Engine", 78, 9], ["Generator #1", 84, 3], ["Boiler", 88, 0], ["Scrubber", 93, 0],
-    ["Fuel Oil Purifier", 95, 0], ["Generator #2", 96, 0], ["Main Air Compressor", 96, 0],
-    ["Cooling Water Pump", 96, 0], ["Generator #3", 97, 0], ["Lube Oil Purifier", 97, 0],
-    ["Ballast Pump", 97, 0], ["Steering Gear", 97, 0], ["Fresh Water Generator", 97, 0],
-    ["Shaft Generator", 98, 0], ["Cargo Pump", 98, 0], ["Fire Pump", 98, 0],
-    ["Sewage Treatment", 98, 0], ["Bilge Pump", 99, 0], ["HVAC", 99, 0], ["Incinerator", 99, 0]
-  ];
   // Alarm status of all 43 monitored equipment (sample values)
   const alarms = [
     { name: "Critical", value: 2, color: "--st-crit", pill: "st-crit" },
@@ -801,11 +779,6 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   // ---------- Card tables ----------
-  const healthState = v => v < 80 ? ["crit", "Critical"] : v < 90 ? ["warn", "Caution"] : ["good", "Good"];
-  document.querySelector(".js-health-rows").innerHTML = equipment.map(([n, h]) => {
-    const [cls, label] = healthState(h);
-    return `<tr><td>${n}</td><td class="num" style="white-space:nowrap"><span class="hbar"><i style="width:${h}%"></i></span>${h}%</td><td class="r"><span class="pill ${cls}">${label}</span></td></tr>`;
-  }).join("");
 
 
   document.querySelector(".js-al-rows").innerHTML = alarms.map(a =>
@@ -1072,48 +1045,54 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   select("Critical");
 
   // ---------- RUL mini charts ----------
-  // Predicted remaining useful life over the last 30 days, with the forecast to end of life
+  // Life used (%) rises over time: solid = last 30 days, dashed = forecast until it reaches end of life (100%)
   const rulItems = [
-    { rul: 12, limit: 14, seed: 41, color: "--warn" },
-    { rul: 21, limit: 14, seed: 53, color: "--health" }
+    { rul: 12, rate: 1.6, seed: 41, color: "--warn" },
+    { rul: 21, rate: 1.1, seed: 53, color: "--health" }
   ];
   const today = new Date(2026, 9, 27);
   const rng = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;
   const md = d => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   function drawRul(item) {
-    const W = 280, H = 118, L = 26, R = 8, T = 10, B = 18, past = 30, span = past + item.rul;
+    const W = 280, H = 128, L = 34, R = 8, T = 16, B = 18, past = 30, span = past + item.rul;
     const r = rng(item.seed);
+    const now = 100 - item.rate * item.rul;                       // life used today
     const pts = [];
-    for (let k = 0; k <= past; k++) pts.push(item.rul + (past - k) * 0.95 + (r() - 0.5) * 2.4);
-    pts[past] = item.rul;
-    const maxV = Math.ceil((Math.max(...pts) + 4) / 10) * 10;
-    const x = d => L + d / span * (W - L - R), y = v => T + (1 - v / maxV) * (H - T - B);
+    for (let k = 0; k <= past; k++) pts.push(now - item.rate * (past - k) + (r() - 0.5) * 3);
+    pts[past] = now;
+    const minV = Math.max(0, Math.floor((Math.min(...pts) - 6) / 10) * 10);
+    const x = d => L + d / span * (W - L - R), y = v => T + (1 - (v - minV) / (100 - minV)) * (H - T - B);
     let o = "";
-    [0, maxV / 2, maxV].forEach(v => {
+    [minV, Math.round((minV + 100) / 2), 100].forEach(v => {
       o += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>`;
-      o += `<text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v}</text>`;
+      o += `<text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v}%</text>`;
     });
-    // prediction band
-    const up = pts.map((v, k) => `${x(k).toFixed(1)},${y(v + 3 + (past - k) * 0.03).toFixed(1)}`);
-    const dn = pts.map((v, k) => `${x(k).toFixed(1)},${y(Math.max(0, v - 3 - (past - k) * 0.03)).toFixed(1)}`).reverse();
-    o += `<polygon points="${up.concat(dn).join(" ")}" fill="var(${item.color})" fill-opacity=".12"/>`;
-    // replace threshold
-    o += `<line x1="${L}" x2="${W - R}" y1="${y(item.limit)}" y2="${y(item.limit)}" stroke="var(--warn)" stroke-dasharray="4 3"/>`;
-    o += `<text x="${L + 4}" y="${y(item.limit) + 10}" style="fill:var(--warn)">Plan replacement at ${item.limit} d</text>`;
-    // history + forecast
+    // end-of-life level
+    o += `<line x1="${L}" x2="${W - R}" y1="${y(100)}" y2="${y(100)}" stroke="var(--st-crit)" stroke-opacity=".6" stroke-dasharray="4 3"/>`;
+    o += `<text x="${L + 4}" y="${y(100) - 4}" style="fill:var(--st-crit)">End of life</text>`;
+    // forecast uncertainty band (widens toward end of life)
+    const band = [];
+    for (let d = past; d <= span; d++) band.push([d, now + item.rate * (d - past), 1 + (d - past) * 0.35]);
+    const up = band.map(([d, v, e]) => `${x(d).toFixed(1)},${y(Math.min(100, v + e)).toFixed(1)}`);
+    const dn = band.map(([d, v, e]) => `${x(d).toFixed(1)},${y(v - e).toFixed(1)}`).reverse();
+    o += `<polygon points="${up.concat(dn).join(" ")}" fill="var(${item.color})" fill-opacity=".14"/>`;
+    // actual (solid) and forecast (dashed)
     o += `<path d="${pts.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join("")}" fill="none" stroke="var(${item.color})" stroke-width="1.8"/>`;
-    o += `<line x1="${x(past)}" y1="${y(item.rul)}" x2="${x(span)}" y2="${y(0)}" stroke="var(${item.color})" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-    // today
+    o += `<line x1="${x(past)}" y1="${y(now)}" x2="${x(span)}" y2="${y(100)}" stroke="var(${item.color})" stroke-width="1.6" stroke-dasharray="4 3"/>`;
+    // today and end-of-life markers
     o += `<line x1="${x(past)}" x2="${x(past)}" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="2 2"/>`;
-    o += `<circle cx="${x(past)}" cy="${y(item.rul)}" r="3.5" fill="var(${item.color})" stroke="var(--surface)" stroke-width="1.5"/>`;
-    o += `<text x="${x(past) - 4}" y="${y(item.rul) - 6}" text-anchor="end" style="fill:var(--fg);font-weight:600">${item.rul} d</text>`;
+    o += `<circle cx="${x(past)}" cy="${y(now)}" r="3.5" fill="var(${item.color})" stroke="var(--surface)" stroke-width="1.5"/>`;
+    o += `<text x="${x(past) - 5}" y="${y(now) + 4}" text-anchor="end" style="fill:var(--fg);font-weight:600">D-${item.rul}</text>`;
+    o += `<line x1="${x(span)}" x2="${x(span)}" y1="${T}" y2="${H - B}" stroke="var(--st-crit)" stroke-opacity=".6" stroke-dasharray="2 2"/>`;
+    o += `<circle cx="${x(span)}" cy="${y(100)}" r="3.5" fill="var(--surface)" stroke="var(--st-crit)" stroke-width="1.8"/>`;
     const end = new Date(today); end.setDate(end.getDate() + item.rul);
     const start = new Date(today); start.setDate(start.getDate() - past);
+    o += `<text x="${x(span) - 6}" y="${y(100) - 4}" text-anchor="end" style="fill:var(--st-crit);font-weight:600">D+${item.rul} · ${md(end)}</text>`;
     o += `<text x="${L}" y="${H - 4}">${md(start)}</text>`;
     o += `<text x="${x(past)}" y="${H - 4}" text-anchor="middle">Today</text>`;
     o += `<text x="${W - R}" y="${H - 4}" text-anchor="end">${md(end)}</text>`;
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Remaining useful life ${item.rul} days, end of life ${md(end)}">${o}</svg>
-      <div class="rul-legend"><span><i style="border-color:var(${item.color})"></i>Predicted RUL (days)</span><span><i style="border-color:var(${item.color});border-top-style:dashed"></i>Forecast to ${md(end)}</span></div>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Life used ${Math.round(now)} percent today, end of life in ${item.rul} days on ${md(end)}">${o}</svg>
+      <div class="rul-legend"><span><i style="border-color:var(${item.color})"></i>Life used (actual)</span><span><i style="border-color:var(${item.color});border-top-style:dashed"></i>Forecast to end of life (D+${item.rul})</span></div>`;
   }
   document.querySelectorAll(".rul-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1146,13 +1125,52 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   document.querySelector(".js-ship").style.left = progress + "%";
 
   // ---------- Vessel selection ----------
-  // Sample data is shared by all vessels; only the selection changes
+  // ---------- Vessel Status ----------
+  // Level rule: Normal = no alarm equipment, Watch = only Undetected/Unknown Fault,
+  // Action required = 1–2 Critical, Critical = 3+ Critical. Counts per vessel are sample values.
+  const fleet = {
+    MARIN: { no: 1, crit: 2, undet: 3, unk: 1 },
+    AURORA: { no: 2, crit: 0, undet: 0, unk: 0 },
+    HALCYON: { no: 3, crit: 0, undet: 2, unk: 1 },
+    NORDSTAR: { no: 4, crit: 4, undet: 1, unk: 0 }
+  };
+  const levels = [
+    { key: "normal", name: "Normal", color: "--good" },
+    { key: "watch", name: "Watch", color: "--health" },
+    { key: "action", name: "Action required", color: "--warn" },
+    { key: "critical", name: "Critical", color: "--st-crit" }
+  ];
+  const levelOf = v => v.crit >= 3 ? 3 : v.crit > 0 ? 2 : v.undet + v.unk > 0 ? 1 : 0;
+  function drawVesselStatus(name) {
+    const v = fleet[name], li = levelOf(v), lv = levels[li];
+    const pt = (deg, r) => [110 - r * Math.cos(deg * Math.PI / 180), 116 - r * Math.sin(deg * Math.PI / 180)];
+    const arc = (a0, a1) => { const [x0, y0] = pt(a0, 86), [x1, y1] = pt(a1, 86); return `M${x0.toFixed(1)} ${y0.toFixed(1)} A86 86 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
+    let o = levels.map((l, i) => `<path class="seg" data-label="${l.name}" data-value="${i === li ? "current" : ""}" data-color="${l.color}"
+      d="${arc(i * 45 + 1, i * 45 + 44)}" fill="none" stroke="var(${l.color})" stroke-width="18" stroke-opacity="${i === li ? 1 : 0.3}"/>`).join("");
+    const [nx, ny] = pt(li * 45 + 22.5, 68);
+    o += `<line x1="110" y1="116" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--fg)" stroke-width="3" stroke-linecap="round"/>`;
+    o += `<circle cx="110" cy="116" r="6" fill="var(--fg)"/>`;
+    o += `<text x="18" y="130" font-size="9" fill="var(--muted)">Normal</text><text x="202" y="130" font-size="9" fill="var(--muted)" text-anchor="end">Critical</text>`;
+    const g = document.querySelector(".js-vs-gauge");
+    g.innerHTML = o;
+    g.setAttribute("aria-label", `Vessel status: ${lv.name}`);
+    const box = document.querySelector(".js-vs");
+    box.style.setProperty("--vlvl", `var(${lv.color})`);
+    document.querySelector(".js-vs-level").textContent = lv.name;
+    document.querySelector(".js-vs-why").textContent = li === 0 ? "No alarm equipment"
+      : `${v.crit} Critical · ${v.undet} Undetected Fault · ${v.unk} Unknown Fault`;
+    document.querySelector(".js-vs-name").textContent = `Vessel ${v.no} · ${name}`;
+  }
+  drawVesselStatus("MARIN");
+
+  // The rest of the page uses the same sample data for every vessel
   document.querySelectorAll("[data-vessel]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-vessel]").forEach(b => {
         b.classList.toggle("active", b === btn);
         b.setAttribute("aria-pressed", String(b === btn));
       });
+      drawVesselStatus(btn.dataset.vessel);
     });
   });
 
