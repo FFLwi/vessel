@@ -324,8 +324,8 @@ body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
 .pill.st-unk { color: var(--st-unk); background: color-mix(in srgb, var(--st-unk) 14%, transparent); }
 .pill.st-off { color: var(--muted); background: color-mix(in srgb, var(--st-off) 18%, transparent); }
 .vs { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
-.vs svg { width: 100%; max-width: 220px; height: auto; }
-.vs-level { font-size: 18px; font-weight: 700; color: var(--vlvl); }
+.vs svg { width: 100%; max-width: 160px; height: auto; }
+.vs-level { font-size: 16px; font-weight: 700; color: var(--vlvl); }
 .vs-why { font-size: 12px; color: var(--muted); }
 .hbar { display: inline-block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface-2);
   vertical-align: middle; margin-right: 6px; overflow: hidden; border: 1px solid var(--line); }
@@ -1150,7 +1150,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
     const [nx, ny] = pt(li * 45 + 22.5, 68);
     o += `<line x1="110" y1="116" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--fg)" stroke-width="3" stroke-linecap="round"/>`;
     o += `<circle cx="110" cy="116" r="6" fill="var(--fg)"/>`;
-    o += `<text x="18" y="130" font-size="9" fill="var(--muted)">Normal</text><text x="202" y="130" font-size="9" fill="var(--muted)" text-anchor="end">Critical</text>`;
+    o += `<text x="14" y="131" font-size="13" fill="var(--muted)">Normal</text><text x="206" y="131" font-size="13" fill="var(--muted)" text-anchor="end">Critical</text>`;
     const g = document.querySelector(".js-vs-gauge");
     g.innerHTML = o;
     g.setAttribute("aria-label", `Vessel status: ${lv.name}`);
