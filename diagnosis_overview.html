@@ -113,7 +113,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   background: var(--bg);
 }
 .filterbar .lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 4px; }
-.vchips { display: flex; gap: 6px; overflow-x: auto; }
+.vchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .vchip {
   padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
   font-weight: 500; white-space: nowrap; cursor: pointer;
@@ -122,6 +122,20 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .vchip:hover { border-color: var(--accent); }
 .vchip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .vchip.active small { color: var(--accent); }
+/* Vessel status dot with a hover label (Normal / Watch / Action required / Critical) */
+.vchip { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+.vdot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--vlvl); }
+.v-normal { --vlvl: var(--good); }
+.v-watch { --vlvl: var(--health); }
+.v-action { --vlvl: var(--warn); }
+.v-critical { --vlvl: var(--st-crit); }
+.vchip[data-status]::after {
+  content: attr(data-status); position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%);
+  padding: 3px 8px; border-radius: 4px; background: var(--fg); color: var(--surface);
+  font-size: 11px; font-weight: 600; white-space: nowrap; pointer-events: none; z-index: 5;
+  opacity: 0; transition: opacity 0.12s ease;
+}
+.vchip[data-status]:hover::after, .vchip[data-status]:focus-visible::after { opacity: 1; }
 .eq-total { font-size: 12px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
 .filterbar .toolbar { margin-left: auto; }
 
@@ -497,7 +511,7 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
   .drawer, .drawer-backdrop, .rt i, .rt i::after { transition: none; }
   .icon-btn.spin svg { animation: none; }
   .ship-view .ping { animation: none; opacity: 0.4; }
-  .rul-btn .chev, .eq-group-btn .chev { transition: none; }
+  .rul-btn .chev, .eq-group-btn .chev, .vchip[data-status]::after { transition: none; }
   .track .ship { transition: none; }
 }
 </style>
@@ -573,10 +587,10 @@ svg:has(.seg:hover) .seg:not(:hover) { opacity: 0.45; }
 <div class="filterbar">
   <span class="lbl">Vessel</span>
   <div class="vchips" role="group" aria-label="Vessel">
-    <button class="vchip active" type="button" data-vessel="MARIN" aria-pressed="true">Vessel 1<small>MARIN</small></button>
-    <button class="vchip" type="button" data-vessel="AURORA" aria-pressed="false">Vessel 2<small>AURORA</small></button>
-    <button class="vchip" type="button" data-vessel="HALCYON" aria-pressed="false">Vessel 3<small>HALCYON</small></button>
-    <button class="vchip" type="button" data-vessel="NORDSTAR" aria-pressed="false">Vessel 4<small>NORDSTAR</small></button>
+    <button class="vchip v-action active" type="button" data-vessel="MARIN" aria-pressed="true" data-status="Action required" aria-label="Vessel 1 MARIN, status: Action required"><i class="vdot" aria-hidden="true"></i>Vessel 1<small>MARIN</small></button>
+    <button class="vchip v-normal" type="button" data-vessel="AURORA" aria-pressed="false" data-status="Normal" aria-label="Vessel 2 AURORA, status: Normal"><i class="vdot" aria-hidden="true"></i>Vessel 2<small>AURORA</small></button>
+    <button class="vchip v-watch" type="button" data-vessel="HALCYON" aria-pressed="false" data-status="Watch" aria-label="Vessel 3 HALCYON, status: Watch"><i class="vdot" aria-hidden="true"></i>Vessel 3<small>HALCYON</small></button>
+    <button class="vchip v-critical" type="button" data-vessel="NORDSTAR" aria-pressed="false" data-status="Critical" aria-label="Vessel 4 NORDSTAR, status: Critical"><i class="vdot" aria-hidden="true"></i>Vessel 4<small>NORDSTAR</small></button>
   </div>
   <span class="eq-total">43 equipment</span>
 <div class="toolbar">
